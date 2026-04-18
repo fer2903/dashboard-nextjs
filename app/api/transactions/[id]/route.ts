@@ -2,56 +2,35 @@
 //localhost:3000/api/transaction/abcdfg // traer el registro con el id 1234
 
 import { NextResponse } from "next/server";
+import { connectDB } from "@/app/src/lib/mongodb";
+import { Transaction } from "@/app/src/models/Transaction";
 
 type TransactionResponse = {
-    id: string; //uuid
+    id: string;
     user: string;
     coin: string;
     amount: number;
 }
-let transactions: TransactionResponse[] = [
-    {
-        "id": "3fa8911e-4249-41a2-b972-10f9325f7ec1",
-        "user": "fer",
-        "coin": "bitcoin",
-        "amount": 2.5
-    },
-    {
-        "id": "0df876b5-b657-4985-b67e-d31dd20dd048",
-        "user": "joel",
-        "coin": "bitcoin",
-        "amount": 50
-    },
-     {
-        "id": "0df876b5-b657-4985-b67e-xxxxxx",
-        "user": "ricardo",
-        "coin": "bitcoin",
-        "amount": 30
-    },
-     {
-        "id": "1",
-        "user": "enrique",
-        "coin": "bitcoin",
-        "amount": 20,
-    }
-]
+
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    await connectDB()
+
     const { id } = await params
     const body = await req.json()
 
-    transactions = transactions.map((t) =>
-        t.id === id ? { ...t, ...body } : t
-    )
+    const updateTrx = await Transaction.findByIdAndUpdate(id, body, { new: true })
 
     return NextResponse.json({
-        message: "updated",
-        transaction: transactions,
+        transaction: updateTrx,
+        message: "updated"
     })
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{id: string}>}){
+    await connectDB()
     const { id } = await params
-    let result = transactions.filter((t)=> t.id !== id)
-    return NextResponse.json({message: "deleted", transactions: result})
+    await Transaction.findByIdAndDelete(id)
+
+    return NextResponse.json({message: "deleted"})
 }

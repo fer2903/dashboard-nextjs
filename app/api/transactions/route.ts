@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { connectDB } from "@/app/src/lib/mongodb";
+import { Transaction } from "@/app/src/models/Transaction";
 
 type TransactionResponse = {
     id: string; //uuid
@@ -7,22 +9,21 @@ type TransactionResponse = {
     amount: number;
 }
 
-let transactions: TransactionResponse[] = [] // actualiaciones emulacion DB
 //GET, POST, PUT, DELETE
 
 export async function GET() {
-    return NextResponse.json(transactions)
+    await connectDB();
+
+    const data = await Transaction.find() // Select * from transactions
+
+    return NextResponse.json(data)
 }
 
 export async function POST(requestBody: Request){ //recibir objetos a generar o registrar 
-    const body = await requestBody.json()
-    const newTransaction: TransactionResponse = {
-        id: crypto.randomUUID(),
-        user: body.user,
-        coin: body.coin,
-        amount: body.amount
-    }
+    await connectDB();
 
-    transactions.push(newTransaction);
-    return NextResponse.json(newTransaction, {status:201})
+    const body = await requestBody.json()
+    const newTrx = await Transaction.create(body)
+
+    return NextResponse.json(newTrx, {status:201})
 }
