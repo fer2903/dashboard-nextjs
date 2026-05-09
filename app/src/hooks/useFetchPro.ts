@@ -7,7 +7,7 @@ type Options ={
 export const useFetchPro = (url: string, options?:Options)=>{
     const [data, setData] = useState([])
     const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    const [error, setError] = useState<string  | null >(null)
 
     const abortRef = useRef<AbortController | null>(null)
     
