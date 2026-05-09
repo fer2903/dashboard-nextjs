@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/app/src/lib/jwt";
+import { verifyToken } from "./app/src/lib/jwt";
 
 /**
  * Middleware de Next.js — Protección de Rutas con JWT
