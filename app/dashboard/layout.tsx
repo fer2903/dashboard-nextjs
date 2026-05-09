@@ -1,21 +1,18 @@
 import Sidebar from "@/app/src/components/organisms/Sidebar";
+import TopBar from "@/app/src/components/organisms/TopBar";
 
 /**
  * Layout del Dashboard — App Router Nested Layout
  *
- * En el App Router de Next.js, los layouts se anidan automáticamente.
- * Este layout se aplica a TODAS las rutas bajo /dashboard:
- *  - /dashboard        → app/dashboard/page.tsx
- *  - /dashboard/users  → app/dashboard/users/page.tsx
+ * Estructura con Sidebar (MUI Drawer dark) + TopBar (MUI AppBar) + Main Content
  *
- * La jerarquía de layouts es:
+ * Jerarquía:
  *  app/layout.tsx (root — ReactQueryProvider)
- *    └── app/dashboard/layout.tsx (dashboard — Sidebar)
+ *    └── app/dashboard/layout.tsx (Sidebar + TopBar)
  *          ├── app/dashboard/page.tsx
- *          └── app/dashboard/users/page.tsx
- *
- * El Sidebar se renderiza una sola vez y el {children} cambia
- * según la página activa — sin recargar el sidebar.
+ *          ├── app/dashboard/users/page.tsx
+ *          ├── app/dashboard/transactions/page.tsx
+ *          └── app/dashboard/payments/page.tsx
  */
 export default function DashboardLayout({
   children,
@@ -23,14 +20,20 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      {/* Sidebar fijo a la izquierda */}
+    <div className="flex min-h-screen" style={{ backgroundColor: "var(--background)" }}>
+      {/* Sidebar fijo izquierdo (MUI Drawer dark variant) */}
       <Sidebar />
 
-      {/* Contenido principal — ocupa el espacio restante */}
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
+      {/* Área de contenido principal */}
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        {/* TopBar sticky (MUI AppBar) */}
+        <TopBar />
+
+        {/* Contenido de la página */}
+        <main className="flex-1 overflow-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

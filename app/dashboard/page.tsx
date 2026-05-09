@@ -1,31 +1,10 @@
 "use client";
 
-/**
- * Página Dashboard — /dashboard
- *
- * Módulo principal del sistema. Muestra estadísticas y gráficos
- * basados en datos de criptomonedas en tiempo real.
- *
- * Fuente de datos: useCryptoSwr (hook que consume CoinGecko API vía SWR)
- *
- * SWR (Stale-While-Revalidate):
- *  - Muestra datos cacheados inmediatamente (stale)
- *  - Revalida en background trayendo datos frescos (revalidate)
- *  - Actualización automática cuando el usuario vuelve al tab
- *
- * Estructura de la página:
- *  1. Header con saludo
- *  2. Stats Cards — 4 métricas clave
- *  3. Gráfico de barras — cambio de precio 24h
- *  4. Tabla top 10 criptomonedas
- */
-
 import { useCryptoSwr } from "@/app/src/hooks/useCryptoSwr";
 import { StatsCard } from "@/app/src/components/molecules/StatsCard";
 import { CryptoChart } from "@/app/src/components/organisms/CryptoChart";
 import { TransactionTable } from "@/app/src/components/organisms/TransactionTable";
 
-// Tipo para los datos que devuelve la API de CoinGecko
 type CoinData = {
   id: string;
   symbol: string;
@@ -39,34 +18,50 @@ type CoinData = {
   circulating_supply: number;
 };
 
+// ── Skeleton de carga estilo MUI ──────────────────────────────────
+const LoadingSkeleton = () => (
+  <div className="p-6 space-y-6 animate-pulse">
+    {/* Stats cards skeleton */}
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {[1,2,3,4].map(i => (
+        <div key={i} className="bg-white rounded-xl p-5 h-36" style={{ boxShadow: "0 0 2px 0 rgba(145,158,171,0.2), 0 12px 24px -4px rgba(145,158,171,0.12)" }}>
+          <div className="flex items-start justify-between">
+            <div className="space-y-2 flex-1">
+              <div className="h-3 w-20 rounded bg-gray-100" />
+              <div className="h-7 w-28 rounded bg-gray-200" />
+              <div className="h-3 w-24 rounded bg-gray-100" />
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-gray-200" />
+          </div>
+        </div>
+      ))}
+    </div>
+    {/* Chart + table skeleton */}
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="bg-white rounded-xl h-80" style={{ boxShadow: "0 0 2px 0 rgba(145,158,171,0.2), 0 12px 24px -4px rgba(145,158,171,0.12)" }} />
+      <div className="bg-white rounded-xl h-80" style={{ boxShadow: "0 0 2px 0 rgba(145,158,171,0.2), 0 12px 24px -4px rgba(145,158,171,0.12)" }} />
+    </div>
+  </div>
+);
+
 export default function DashboardPage() {
-  // useCryptoSwr fetcha: https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd
   const { data, loading, error } = useCryptoSwr();
 
-  // ── Estado de carga ──
-  if (loading) {
-    return (
-      <div className="p-6 animate-pulse">
-        {/* Skeleton de cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-gray-200 rounded-xl" />
-          ))}
-        </div>
-        {/* Skeleton del gráfico */}
-        <div className="h-72 bg-gray-200 rounded-xl" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingSkeleton />;
 
-  // ── Estado de error ──
   if (error || !data) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-6 text-center">
-          <p className="text-2xl mb-2">⚠️</p>
-          <p className="font-semibold">Error al cargar datos de mercado</p>
-          <p className="text-sm mt-1">
+        <div
+          className="rounded-xl p-6 text-center"
+          style={{
+            backgroundColor: "rgba(239,68,68,0.08)",
+            border: "1px solid rgba(239,68,68,0.24)",
+          }}
+        >
+          <p className="text-3xl mb-3">⚠️</p>
+          <p className="font-semibold" style={{ color: "#dc2626" }}>Error al cargar datos de mercado</p>
+          <p className="text-sm mt-1" style={{ color: "#b91c1c" }}>
             Verifica tu conexión o intenta de nuevo más tarde
           </p>
         </div>
@@ -74,14 +69,10 @@ export default function DashboardPage() {
     );
   }
 
-  // ── Procesamiento de datos para las stats ──
   const coins = data as CoinData[];
+  const bitcoin = coins.find(c => c.id === "bitcoin");
+  const ethereum = coins.find(c => c.id === "ethereum");
 
-  // Encontrar coins específicas
-  const bitcoin = coins.find((c) => c.id === "bitcoin");
-  const ethereum = coins.find((c) => c.id === "ethereum");
-
-  // Calcular ganancias y pérdidas del día
   const topGainer = [...coins].sort(
     (a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h
   )[0];
@@ -90,14 +81,12 @@ export default function DashboardPage() {
     (a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h
   )[0];
 
-  // Formatear precio en USD con separadores de miles
   const formatPrice = (price: number) => {
     if (price >= 1000) return `$${price.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
     if (price >= 1) return `$${price.toFixed(2)}`;
-    return `$${price.toFixed(6)}`; // para monedas de poco valor
+    return `$${price.toFixed(6)}`;
   };
 
-  // Formatear market cap en notación abreviada
   const formatMarketCap = (mc: number) => {
     if (mc >= 1e12) return `$${(mc / 1e12).toFixed(2)}T`;
     if (mc >= 1e9) return `$${(mc / 1e9).toFixed(2)}B`;
@@ -107,24 +96,24 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-slate-500 text-sm mt-0.5">
-            Datos de mercado en tiempo real · CoinGecko API
-          </p>
-        </div>
-        {/* Indicador de datos en vivo */}
-        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          En vivo
+
+      {/* ── Indicador En Vivo ─────────────────────────────────── */}
+      <div className="flex items-center justify-end">
+        <div
+          className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full"
+          style={{
+            backgroundColor: "rgba(34,197,94,0.12)",
+            color: "#16a34a",
+            border: "1px solid rgba(34,197,94,0.24)",
+          }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+          En vivo · CoinGecko API
         </div>
       </div>
 
-      {/* ── Stats Cards ── */}
+      {/* ── Stats Cards ──────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Bitcoin */}
         <StatsCard
           icon="₿"
           label="Bitcoin (BTC)"
@@ -133,8 +122,6 @@ export default function DashboardPage() {
           subtitle={`Market cap: ${formatMarketCap(bitcoin?.market_cap ?? 0)}`}
           accent="amber"
         />
-
-        {/* Ethereum */}
         <StatsCard
           icon="⟠"
           label="Ethereum (ETH)"
@@ -143,8 +130,6 @@ export default function DashboardPage() {
           subtitle={`Market cap: ${formatMarketCap(ethereum?.market_cap ?? 0)}`}
           accent="indigo"
         />
-
-        {/* Top Gainer */}
         <StatsCard
           icon="🚀"
           label="Mayor subida 24h"
@@ -153,8 +138,6 @@ export default function DashboardPage() {
           subtitle={formatPrice(topGainer?.current_price ?? 0)}
           accent="emerald"
         />
-
-        {/* Top Loser */}
         <StatsCard
           icon="📉"
           label="Mayor bajada 24h"
@@ -165,85 +148,144 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* ── Sección: Gráfico + Tabla Top 10 ── */}
+      {/* ── Gráfico + Tabla Top 10 ────────────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
         {/* Gráfico de barras 24h */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <div className="mb-4">
-            <h2 className="text-sm font-semibold text-slate-900">
-              Variación de Precio — 24h
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Top 8 criptomonedas por capitalización de mercado
-            </p>
+        <div
+          className="bg-white rounded-xl p-6"
+          style={{ boxShadow: "0 0 2px 0 rgba(145,158,171,0.2), 0 12px 24px -4px rgba(145,158,171,0.12)" }}
+        >
+          {/* Card Header estilo MUI */}
+          <div className="flex items-start justify-between mb-5">
+            <div>
+              <h2
+                className="text-base font-bold"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Variación de Precio — 24h
+              </h2>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                Top 8 criptomonedas por capitalización
+              </p>
+            </div>
+            <span
+              className="text-xs px-2.5 py-1 rounded-full font-medium"
+              style={{
+                backgroundColor: "rgba(79,70,229,0.1)",
+                color: "var(--primary)",
+              }}
+            >
+              Últimas 24h
+            </span>
           </div>
-          {/* Componente de gráfico SVG */}
           <CryptoChart coins={coins} />
         </div>
 
-        {/* Tabla top 10 */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <div className="mb-4">
-            <h2 className="text-sm font-semibold text-slate-900">
-              Top 10 Criptomonedas
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Ordenadas por capitalización de mercado
-            </p>
+        {/* Tabla Top 10 */}
+        <div
+          className="bg-white rounded-xl overflow-hidden"
+          style={{ boxShadow: "0 0 2px 0 rgba(145,158,171,0.2), 0 12px 24px -4px rgba(145,158,171,0.12)" }}
+        >
+          {/* Card Header */}
+          <div className="px-6 py-5 flex items-start justify-between"
+            style={{ borderBottom: "1px solid rgba(145,158,171,0.16)" }}
+          >
+            <div>
+              <h2
+                className="text-base font-bold"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Top 10 Criptomonedas
+              </h2>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                Ordenadas por capitalización de mercado
+              </p>
+            </div>
+            <span
+              className="text-xs px-2.5 py-1 rounded-full font-medium"
+              style={{
+                backgroundColor: "rgba(34,197,94,0.1)",
+                color: "#16a34a",
+              }}
+            >
+              En vivo
+            </span>
           </div>
 
-          <div className="overflow-x-auto -mx-1">
-            <table className="w-full text-sm">
+          {/* MUI-style table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm mui-table">
               <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left pb-3 pl-1 text-slate-500 font-semibold text-xs uppercase tracking-wide">#</th>
-                  <th className="text-left pb-3 text-slate-500 font-semibold text-xs uppercase tracking-wide">Moneda</th>
-                  <th className="text-right pb-3 text-slate-500 font-semibold text-xs uppercase tracking-wide">Precio</th>
-                  <th className="text-right pb-3 pr-1 text-slate-500 font-semibold text-xs uppercase tracking-wide">24h</th>
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide"
+                    style={{ color: "var(--text-secondary)", backgroundColor: "#F4F6F8", borderBottom: "1px solid rgba(145,158,171,0.24)" }}>
+                    #
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide"
+                    style={{ color: "var(--text-secondary)", backgroundColor: "#F4F6F8", borderBottom: "1px solid rgba(145,158,171,0.24)" }}>
+                    Moneda
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wide"
+                    style={{ color: "var(--text-secondary)", backgroundColor: "#F4F6F8", borderBottom: "1px solid rgba(145,158,171,0.24)" }}>
+                    Precio
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wide"
+                    style={{ color: "var(--text-secondary)", backgroundColor: "#F4F6F8", borderBottom: "1px solid rgba(145,158,171,0.24)" }}>
+                    24h
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
-                {coins.slice(0, 10).map((coin) => {
+              <tbody>
+                {coins.slice(0, 10).map((coin, idx) => {
                   const isPositive = coin.price_change_percentage_24h >= 0;
+                  const isLast = idx === 9;
                   return (
-                    <tr key={coin.id} className="hover:bg-slate-50 transition-colors group">
-                      {/* Rank */}
-                      <td className="py-3 pr-2 pl-1 text-slate-400 text-xs font-mono w-6">
+                    <tr
+                      key={coin.id}
+                      className="transition-colors"
+                      style={{ borderBottom: isLast ? "none" : "1px solid rgba(145,158,171,0.12)" }}
+                      onMouseEnter={e => {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(145,158,171,0.04)";
+                      }}
+                      onMouseLeave={e => {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = "transparent";
+                      }}
+                    >
+                      <td className="px-4 py-3 text-xs font-mono" style={{ color: "var(--text-disabled)" }}>
                         {coin.market_cap_rank}
                       </td>
-                      {/* Nombre y símbolo */}
-                      <td className="py-3">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-2.5">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={coin.image}
                             alt={coin.name}
-                            className="w-7 h-7 rounded-full ring-1 ring-slate-100"
+                            className="w-7 h-7 rounded-full"
+                            style={{ boxShadow: "0 0 0 2px rgba(145,158,171,0.16)" }}
                           />
                           <div>
-                            <p className="font-semibold text-slate-800 leading-none text-xs">
+                            <p className="text-xs font-semibold leading-none" style={{ color: "var(--text-primary)" }}>
                               {coin.name}
                             </p>
-                            <p className="text-xs text-slate-400 uppercase mt-0.5 font-mono">
+                            <p className="text-[10px] uppercase mt-0.5 font-mono" style={{ color: "var(--text-secondary)" }}>
                               {coin.symbol}
                             </p>
                           </div>
                         </div>
                       </td>
-                      {/* Precio */}
-                      <td className="py-3 text-right font-mono text-slate-800 text-xs font-semibold">
+                      <td className="px-4 py-3 text-right text-xs font-mono font-semibold" style={{ color: "var(--text-primary)" }}>
                         {formatPrice(coin.current_price)}
                       </td>
-                      {/* Cambio 24h */}
-                      <td className="py-3 text-right pr-1">
+                      <td className="px-4 py-3 text-right">
                         <span
-                          className={`inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
-                            isPositive
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-red-50 text-red-600"
-                          }`}
+                          className="inline-flex items-center gap-0.5 text-xs font-bold px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: isPositive ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
+                            color: isPositive ? "#16a34a" : "#dc2626",
+                          }}
                         >
-                          {isPositive ? "↑" : "↓"}
+                          {isPositive ? "▲" : "▼"}
                           {Math.abs(coin.price_change_percentage_24h)?.toFixed(2)}%
                         </span>
                       </td>
@@ -256,18 +298,32 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Sección: Transacciones recientes ── */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-        <div className="mb-4">
-          <h2 className="text-sm font-semibold text-slate-900">
-            Transacciones Recientes
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Últimas operaciones registradas en el sistema
-          </p>
+      {/* ── Transacciones Recientes ───────────────────────────── */}
+      <div
+        className="bg-white rounded-xl overflow-hidden"
+        style={{ boxShadow: "0 0 2px 0 rgba(145,158,171,0.2), 0 12px 24px -4px rgba(145,158,171,0.12)" }}
+      >
+        {/* Card Header */}
+        <div
+          className="px-6 py-5 flex items-start justify-between"
+          style={{ borderBottom: "1px solid rgba(145,158,171,0.16)" }}
+        >
+          <div>
+            <h2
+              className="text-base font-bold"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Transacciones Recientes
+            </h2>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+              Últimas operaciones registradas en el sistema
+            </p>
+          </div>
         </div>
-        {/* Reutilizamos el componente existente de la clase anterior */}
-        <TransactionTable />
+
+        <div className="px-2 pb-2">
+          <TransactionTable />
+        </div>
       </div>
     </div>
   );

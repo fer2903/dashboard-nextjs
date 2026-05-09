@@ -1,21 +1,6 @@
 import Link from "next/link";
 import { stripe } from "@/app/src/lib/stripe";
 
-/**
- * Página de Éxito — /dashboard/payments/success?session_id=cs_...
- *
- * Server Component. Cuando Stripe completa el pago, redirige al usuario
- * aquí con el `session_id` en el query string. Lo usamos para recuperar
- * los detalles de la sesión y mostrar un resumen.
- *
- * Importante: NO uses esta página como única confirmación de pago en
- * producción — confía en el webhook (`checkout.session.completed`).
- * Aquí solo mostramos info al usuario; la lógica de "marcar como pagado"
- * debería vivir en el webhook.
- *
- * En Next 16, `searchParams` se entrega como Promise.
- */
-
 type SearchParams = Promise<{ session_id?: string }>;
 
 export default async function PaymentSuccessPage({
@@ -43,53 +28,106 @@ export default async function PaymentSuccessPage({
   }
 
   return (
-    <div className="p-6">
-      <div className="max-w-md mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center mt-8">
-        <div className="text-5xl mb-4">✅</div>
-        <h1 className="text-2xl font-bold text-gray-900">¡Pago exitoso!</h1>
-        <p className="text-gray-500 text-sm mt-2">
-          Gracias por tu compra. Tu pago fue procesado correctamente.
-        </p>
-
-        {amount !== null && (
-          <div className="bg-gray-50 rounded-lg p-4 mt-6 text-left text-sm">
-            <div className="flex justify-between py-1">
-              <span className="text-gray-500">Total</span>
-              <span className="font-semibold text-gray-900 font-mono">
-                ${(amount / 100).toFixed(2)} {currency.toUpperCase()}
-              </span>
-            </div>
-            {customerEmail && (
-              <div className="flex justify-between py-1">
-                <span className="text-gray-500">Email</span>
-                <span className="font-medium text-gray-700">
-                  {customerEmail}
-                </span>
-              </div>
-            )}
-            {session_id && (
-              <div className="flex justify-between py-1">
-                <span className="text-gray-500">Sesión</span>
-                <span className="font-mono text-xs text-gray-400">
-                  {session_id.slice(0, 14)}…
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {fetchError && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-lg p-3 mt-4 text-xs text-left">
-            No se pudieron recuperar los detalles: {fetchError}
-          </div>
-        )}
-
-        <Link
-          href="/dashboard/payments"
-          className="inline-block mt-6 px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+    <div className="p-6 flex items-start justify-center min-h-[70vh] pt-12">
+      <div
+        className="w-full max-w-md bg-white rounded-xl overflow-hidden"
+        style={{
+          boxShadow: "0 0 2px 0 rgba(145,158,171,0.2), 0 24px 48px -4px rgba(145,158,171,0.18)",
+        }}
+      >
+        {/* Header verde de éxito */}
+        <div
+          className="px-8 py-10 text-center"
+          style={{
+            background: "linear-gradient(135deg, #34d399 0%, #059669 100%)",
+          }}
         >
-          Volver a Pagos
-        </Link>
+          {/* Icono circular */}
+          <div
+            className="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4"
+            style={{ backgroundColor: "rgba(255,255,255,0.24)" }}
+          >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-extrabold text-white">¡Pago Exitoso!</h1>
+          <p className="text-green-100 text-sm mt-2">
+            Tu pago fue procesado correctamente
+          </p>
+        </div>
+
+        {/* Detalles */}
+        <div className="px-8 py-6 space-y-4">
+          {amount !== null && (
+            <div
+              className="rounded-xl p-4 space-y-3"
+              style={{ backgroundColor: "#F4F6F8" }}
+            >
+              <p
+                className="text-xs font-semibold uppercase tracking-[0.08em]"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Resumen del pago
+              </p>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Total pagado</span>
+                  <span
+                    className="text-sm font-bold font-mono"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    ${(amount / 100).toFixed(2)} {currency.toUpperCase()}
+                  </span>
+                </div>
+
+                {customerEmail && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Email</span>
+                    <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                      {customerEmail}
+                    </span>
+                  </div>
+                )}
+
+                {session_id && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Referencia</span>
+                    <span className="text-xs font-mono" style={{ color: "var(--text-disabled)" }}>
+                      {session_id.slice(0, 16)}…
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {fetchError && (
+            <div
+              className="rounded-lg p-3 text-xs"
+              style={{
+                backgroundColor: "rgba(245,158,11,0.08)",
+                border: "1px solid rgba(245,158,11,0.24)",
+                color: "#b45309",
+              }}
+            >
+              No se pudieron recuperar los detalles: {fetchError}
+            </div>
+          )}
+
+          <Link
+            href="/dashboard/payments"
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-lg text-sm font-bold text-white transition-all duration-200"
+            style={{
+              background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+              boxShadow: "0 8px 16px 0 rgba(79,70,229,0.28)",
+              letterSpacing: "0.04em",
+            }}
+          >
+            VOLVER A PAGOS
+          </Link>
+        </div>
       </div>
     </div>
   );

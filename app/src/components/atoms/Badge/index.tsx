@@ -1,38 +1,47 @@
 /**
- * Badge — Chip colorido para identificar criptomonedas u otros valores
+ * Badge — MUI Chip estilo para criptomonedas
  *
- * Asigna colores basados en las monedas más comunes;
- * el resto recibe un color neutro.
+ * Chip colorido con estilo Material UI (filled variant).
  */
 
-type Props = {
-  value: string;
+type Props = { value: string };
+
+// Paleta de colores por moneda — background, text, border
+const COIN_STYLES: Record<string, { bg: string; color: string; border: string }> = {
+  btc:      { bg: "rgba(217,119,6,0.10)",  color: "#b45309", border: "rgba(217,119,6,0.20)"  },
+  bitcoin:  { bg: "rgba(217,119,6,0.10)",  color: "#b45309", border: "rgba(217,119,6,0.20)"  },
+  eth:      { bg: "rgba(79,70,229,0.10)",  color: "#4338ca", border: "rgba(79,70,229,0.20)"  },
+  ethereum: { bg: "rgba(79,70,229,0.10)",  color: "#4338ca", border: "rgba(79,70,229,0.20)"  },
+  usdt:     { bg: "rgba(5,150,105,0.10)",  color: "#047857", border: "rgba(5,150,105,0.20)"  },
+  usdc:     { bg: "rgba(2,132,199,0.10)",  color: "#0369a1", border: "rgba(2,132,199,0.20)"  },
+  bnb:      { bg: "rgba(202,138,4,0.10)",  color: "#a16207", border: "rgba(202,138,4,0.20)"  },
+  sol:      { bg: "rgba(124,58,237,0.10)", color: "#6d28d9", border: "rgba(124,58,237,0.20)" },
+  solana:   { bg: "rgba(124,58,237,0.10)", color: "#6d28d9", border: "rgba(124,58,237,0.20)" },
+  xrp:      { bg: "rgba(37,99,235,0.10)",  color: "#1d4ed8", border: "rgba(37,99,235,0.20)"  },
+  ada:      { bg: "rgba(8,145,178,0.10)",  color: "#0e7490", border: "rgba(8,145,178,0.20)"  },
+  doge:     { bg: "rgba(234,88,12,0.10)",  color: "#c2410c", border: "rgba(234,88,12,0.20)"  },
 };
 
-// Paleta de colores por símbolo/nombre de moneda (lowercase)
-const COIN_COLORS: Record<string, string> = {
-  btc:      "bg-amber-100 text-amber-800 ring-1 ring-amber-200",
-  bitcoin:  "bg-amber-100 text-amber-800 ring-1 ring-amber-200",
-  eth:      "bg-indigo-100 text-indigo-800 ring-1 ring-indigo-200",
-  ethereum: "bg-indigo-100 text-indigo-800 ring-1 ring-indigo-200",
-  usdt:     "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200",
-  usdc:     "bg-sky-100 text-sky-800 ring-1 ring-sky-200",
-  bnb:      "bg-yellow-100 text-yellow-800 ring-1 ring-yellow-200",
-  sol:      "bg-violet-100 text-violet-800 ring-1 ring-violet-200",
-  solana:   "bg-violet-100 text-violet-800 ring-1 ring-violet-200",
-  xrp:      "bg-blue-100 text-blue-800 ring-1 ring-blue-200",
-  ada:      "bg-cyan-100 text-cyan-800 ring-1 ring-cyan-200",
-  doge:     "bg-orange-100 text-orange-800 ring-1 ring-orange-200",
+const DEFAULT_STYLE = {
+  bg: "rgba(145,158,171,0.12)",
+  color: "#637381",
+  border: "rgba(145,158,171,0.24)",
 };
-
-const DEFAULT_COLOR = "bg-slate-100 text-slate-700 ring-1 ring-slate-200";
 
 export const Badge = ({ value }: Props) => {
   const key = value?.toLowerCase() ?? "";
-  const colorClass = COIN_COLORS[key] ?? DEFAULT_COLOR;
+  const style = COIN_STYLES[key] ?? DEFAULT_STYLE;
 
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${colorClass}`}>
+    <span
+      className="inline-flex items-center text-[11px] font-bold px-2.5 py-0.5 rounded-full"
+      style={{
+        backgroundColor: style.bg,
+        color: style.color,
+        border: `1px solid ${style.border}`,
+        letterSpacing: "0.05em",
+      }}
+    >
       {value?.toUpperCase()}
     </span>
   );
