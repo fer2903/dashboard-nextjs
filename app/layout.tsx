@@ -1,3 +1,5 @@
+import "./globals.css";
+
 import { ReactQueryProvider } from "./src/providers/ReactQueryProvider";
 
 export default function RootLayout({
