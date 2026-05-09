@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Guía: Crear un nuevo MFE — Multi-zone Next.js</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #F4F6F8;
+    color: #212B36;
+    line-height: 1.7;
+    padding: 40px 20px 80px;
+  }
+  .container { max-width: 860px; margin: 0 auto; }
+
+  /* HEADER */
+  .hero {
+    background: linear-gradient(135deg, #1C2536 0%, #2D3748 100%);
+    border-radius: 16px;
+    padding: 48px 48px 40px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(99,102,241,0.15);
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(99,102,241,0.24);
+    color: #818CF8;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .hero p {
+    color: #94A3B8;
+    font-size: 1rem;
+    max-width: 560px;
+  }
+
+  /* SECTION */
+  .section {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    box-shadow: 0 0 2px rgba(145,158,171,0.2), 0 12px 24px -4px rgba(145,158,171,0.12);
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 28px;
+    border-bottom: 1px solid rgba(145,158,171,0.16);
+  }
+  .section-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: linear-gradient(135deg, #60A5FA, #2563EB); }
+  .icon-purple{ background: linear-gradient(135deg, #A78BFA, #7C3AED); }
+  .icon-green { background: linear-gradient(135deg, #34D399, #059669); }
+  .icon-orange{ background: linear-gradient(135deg, #FB923C, #EA580C); }
+  .icon-indigo{ background: linear-gradient(135deg, #818CF8, #4F46E5); }
+  .icon-rose  { background: linear-gradient(135deg, #FB7185, #E11D48); }
+
+  .section-title { font-size: 1rem; font-weight: 700; color: #212B36; }
+  .section-subtitle { font-size: 0.78rem; color: #637381; margin-top: 2px; }
+  .section-body { padding: 24px 28px; }
+
+  /* STEPS */
+  .steps { display: flex; flex-direction: column; gap: 20px; }
+  .step { display: flex; gap: 16px; align-items: flex-start; }
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .step-content { flex: 1; min-width: 0; }
+  .step-label { font-size: 0.875rem; font-weight: 600; color: #212B36; margin-bottom: 6px; }
+  .step-desc { font-size: 0.825rem; color: #637381; margin-bottom: 8px; }
+
+  /* CODE BLOCKS */
+  pre {
+    background: #1C2536;
+    border-radius: 10px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    margin: 10px 0;
+  }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.8rem;
+    color: #818CF8;
+  }
+  pre code { display: block; line-height: 1.8; }
+  .comment { color: #64748B; }
+  .keyword { color: #F472B6; }
+  .string  { color: #34D399; }
+  .number  { color: #FB923C; }
+  .prop    { color: #60A5FA; }
+  .value   { color: #818CF8; }
+  .hl { background: rgba(99,102,241,0.12); border-radius: 3px; padding: 0 2px; }
+
+  /* INFO BOX */
+  .info-box {
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 0.825rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 12px 0;
+  }
+  .info-box.blue   { background: rgba(37,99,235,0.07);  border: 1px solid rgba(37,99,235,0.18); color: #1D4ED8; }
+  .info-box.orange { background: rgba(234,88,12,0.07);  border: 1px solid rgba(234,88,12,0.18); color: #C2410C; }
+  .info-box.green  { background: rgba(5,150,105,0.07);  border: 1px solid rgba(5,150,105,0.18); color: #065F46; }
+  .info-box.purple { background: rgba(124,58,237,0.07); border: 1px solid rgba(124,58,237,0.18);color: #6D28D9; }
+  .info-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 0.825rem; margin: 12px 0; }
+  th {
+    background: #F4F6F8;
+    color: #637381;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid rgba(145,158,171,0.24);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(145,158,171,0.12);
+    color: #212B36;
+  }
+  tr:last-child td { border-bottom: none; }
+  code.inline {
+    background: rgba(79,70,229,0.08);
+    color: #4F46E5;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+  }
+
+  /* ARCH DIAGRAM */
+  .arch {
+    background: #0F172A;
+    border-radius: 12px;
+    padding: 24px;
+    font-family: monospace;
+    font-size: 0.82rem;
+    color: #94A3B8;
+    line-height: 2;
+  }
+  .arch .host  { color: #60A5FA; }
+  .arch .mfe   { color: #A78BFA; }
+  .arch .arrow { color: #64748B; }
+  .arch .port  { color: #34D399; }
+  .arch .api   { color: #FB923C; }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 0.875rem; color: #212B36;
+  }
+  .check-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #34D399, #059669);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+    font-size: 10px; color: white; font-weight: bold;
+  }
+
+  /* DIVIDER */
+  hr { border: none; border-top: 1px solid rgba(145,158,171,0.16); margin: 20px 0; }
+
+  p { font-size: 0.875rem; color: #637381; margin-bottom: 10px; }
+  strong { color: #212B36; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">📦 Next.js Multi-zone</div>
+    <h1>Crear un nuevo<br>Microfrontend</h1>
+    <p>Guía paso a paso para agregar cualquier módulo como MFE independiente e integrarlo al host <strong style="color:#fff">dashboard-nextjs</strong>.</p>
+  </div>
+
+  <!-- ARQUITECTURA -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🗺</div>
+      <div>
+        <div class="section-title">Arquitectura Multi-zone</div>
+        <div class="section-subtitle">Cómo se comunican el host y los MFEs</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <p>El patrón Multi-zone de Next.js permite que múltiples apps Next.js independientes se vean como una sola desde el navegador. El host delega rutas a los MFEs vía <strong>rewrites</strong>.</p>
+      <div class="arch">
+        <div><span class="host">localhost:3000</span>  <span class="arrow">→</span>  <span>Host (dashboard-nextjs)</span></div>
+        <div><span class="host">localhost:3000/dashboard/transactions</span>  <span class="arrow">──rewrite──▶</span>  <span class="mfe">localhost:3001</span></div>
+        <div><span class="host">localhost:3000/dashboard/orders</span>        <span class="arrow">──rewrite──▶</span>  <span class="mfe">localhost:3002</span></div>
+        <div><span class="host">localhost:3000/dashboard/reports</span>       <span class="arrow">──rewrite──▶</span>  <span class="mfe">localhost:3003</span></div>
+        <div style="margin-top:8px"><span class="host">localhost:3000/api/*</span>  <span class="arrow">→</span>  <span class="api">MongoDB (accesible desde todos los MFEs vía CORS)</span></div>
+      </div>
+      <div class="info-box blue" style="margin-top:16px">
+        <span class="info-icon">ℹ️</span>
+        <span>La URL en el navegador siempre muestra el puerto del <strong>host (3000)</strong>. El usuario nunca sabe que existe un MFE en otro puerto — todo parece una sola app.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 1: CREAR EL PROYECTO -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-purple">①</div>
+      <div>
+        <div class="section-title">Paso 1 — Crear el proyecto MFE</div>
+        <div class="section-subtitle">Inicializar Next.js con los archivos de configuración correctos</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <p>Elige un nombre para tu módulo. En este ejemplo usamos <code class="inline">orders-mfe</code> en el puerto <code class="inline">3002</code>.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-label">Crear la carpeta del MFE (dentro del monorepo o fuera)</div>
+            <pre><code><span class="comment"># Dentro del monorepo (recomendado)</span>
+cd /ruta/a/dashboard-nextjs
+mkdir orders-mfe &amp;&amp; cd orders-mfe
+
+<span class="comment"># O como proyecto independiente</span>
+mkdir ~/proyectos/orders-mfe &amp;&amp; cd ~/proyectos/orders-mfe</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-label">Crear <code class="inline">package.json</code></div>
+            <pre><code>{
+  <span class="prop">"name"</span>: <span class="string">"orders-mfe"</span>,
+  <span class="prop">"version"</span>: <span class="string">"0.1.0"</span>,
+  <span class="prop">"private"</span>: <span class="value">true</span>,
+  <span class="prop">"scripts"</span>: {
+    <span class="prop">"dev"</span>:   <span class="string">"next dev -p 3002"</span>,
+    <span class="prop">"build"</span>: <span class="string">"next build"</span>,
+    <span class="prop">"start"</span>: <span class="string">"next start -p 3002"</span>
+  },
+  <span class="prop">"dependencies"</span>: {
+    <span class="prop">"next"</span>:       <span class="string">"^15.3.1"</span>,
+    <span class="prop">"react"</span>:      <span class="string">"^19.0.0"</span>,
+    <span class="prop">"react-dom"</span>:  <span class="string">"^19.0.0"</span>
+  },
+  <span class="prop">"devDependencies"</span>: {
+    <span class="prop">"typescript"</span>:          <span class="string">"^5"</span>,
+    <span class="prop">"@types/node"</span>:         <span class="string">"^20"</span>,
+    <span class="prop">"@types/react"</span>:        <span class="string">"^19"</span>,
+    <span class="prop">"tailwindcss"</span>:         <span class="string">"^4"</span>,
+    <span class="prop">"@tailwindcss/postcss"</span>: <span class="string">"^4"</span>
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-label">Crear <code class="inline">next.config.ts</code> — la parte más crítica</div>
+            <pre><code><span class="keyword">import</span> type { NextConfig } <span class="keyword">from</span> <span class="string">"next"</span>;
+
+<span class="keyword">const</span> nextConfig: NextConfig = {
+  <span class="comment">// 🔑 CLAVE: basePath hace que TODAS las rutas del MFE</span>
+  <span class="comment">//    queden automáticamente bajo este prefijo.</span>
+  <span class="comment">//    Debe coincidir exactamente con el rewrite del host.</span>
+  <span class="hl"><span class="prop">basePath</span>: <span class="string">"/dashboard/orders"</span>,</span>
+
+  <span class="comment">// Permite que el host (localhost:3000) embeba este MFE</span>
+  <span class="keyword">async</span> <span class="prop">headers</span>() {
+    <span class="keyword">return</span> [{
+      <span class="prop">source</span>: <span class="string">"/:path*"</span>,
+      <span class="prop">headers</span>: [
+        { <span class="prop">key</span>: <span class="string">"Access-Control-Allow-Origin"</span>,
+          <span class="prop">value</span>: <span class="string">"http://localhost:3000"</span> }
+      ]
+    }];
+  },
+};
+
+<span class="keyword">export default</span> nextConfig;</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-label">Crear <code class="inline">.env.local</code> — URL de la API del host</div>
+            <pre><code><span class="comment"># .env.local</span>
+<span class="prop">NEXT_PUBLIC_API_URL</span>=<span class="string">http://localhost:3000</span></code></pre>
+            <div class="info-box orange">
+              <span class="info-icon">⚠️</span>
+              <span>En producción este valor debe apuntar al dominio real del host. No lo hardcodees en el código.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-label">Crear <code class="inline">tsconfig.json</code></div>
+            <pre><code>{
+  <span class="prop">"compilerOptions"</span>: {
+    <span class="prop">"target"</span>: <span class="string">"ES2017"</span>,
+    <span class="prop">"lib"</span>: [<span class="string">"dom"</span>, <span class="string">"dom.iterable"</span>, <span class="string">"esnext"</span>],
+    <span class="prop">"allowJs"</span>: <span class="value">true</span>,
+    <span class="prop">"skipLibCheck"</span>: <span class="value">true</span>,
+    <span class="prop">"strict"</span>: <span class="value">true</span>,
+    <span class="prop">"noEmit"</span>: <span class="value">true</span>,
+    <span class="prop">"esModuleInterop"</span>: <span class="value">true</span>,
+    <span class="prop">"module"</span>: <span class="string">"esnext"</span>,
+    <span class="prop">"moduleResolution"</span>: <span class="string">"bundler"</span>,
+    <span class="prop">"resolveJsonModule"</span>: <span class="value">true</span>,
+    <span class="prop">"isolatedModules"</span>: <span class="value">true</span>,
+    <span class="prop">"jsx"</span>: <span class="string">"preserve"</span>,
+    <span class="prop">"incremental"</span>: <span class="value">true</span>,
+    <span class="prop">"plugins"</span>: [{ <span class="prop">"name"</span>: <span class="string">"next"</span> }],
+    <span class="prop">"paths"</span>: { <span class="prop">"@/*"</span>: [<span class="string">"./app/*"</span>] }
+  },
+  <span class="prop">"include"</span>: [<span class="string">"next-env.d.ts"</span>, <span class="string">"**/*.ts"</span>, <span class="string">"**/*.tsx"</span>],
+  <span class="prop">"exclude"</span>: [<span class="string">"node_modules"</span>]
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-content">
+            <div class="step-label">Crear <code class="inline">postcss.config.mjs</code> (para Tailwind v4)</div>
+            <pre><code><span class="keyword">const</span> config = {
+  <span class="prop">plugins</span>: { <span class="string">"@tailwindcss/postcss"</span>: {} }
+};
+<span class="keyword">export default</span> config;</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 2: ESTRUCTURA APP -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-green">②</div>
+      <div>
+        <div class="section-title">Paso 2 — Estructura de la app</div>
+        <div class="section-subtitle">Los archivos mínimos para que el MFE funcione</div>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-label"><code class="inline">app/globals.css</code> — copiar los tokens de diseño del host</div>
+            <pre><code><span class="keyword">@import</span> <span class="string">"tailwindcss"</span>;
+
+:root {
+  <span class="prop">--primary</span>:        <span class="string">#4f46e5</span>;
+  <span class="prop">--background</span>:     <span class="string">#F4F6F8</span>;
+  <span class="prop">--surface</span>:        <span class="string">#ffffff</span>;
+  <span class="prop">--text-primary</span>:   <span class="string">#212B36</span>;
+  <span class="prop">--text-secondary</span>: <span class="string">#637381</span>;
+  <span class="prop">--text-disabled</span>:  <span class="string">#919EAB</span>;
+  <span class="prop">--divider</span>:        <span class="string">rgba(145, 158, 171, 0.24)</span>;
+  <span class="prop">--sidebar-bg</span>:     <span class="string">#1C2536</span>;
+  <span class="prop">--shadow-card</span>:    <span class="string">0 0 2px 0 rgba(145,158,171,0.20),
+                    0 12px 24px -4px rgba(145,158,171,0.12)</span>;
+  <span class="prop">--border</span>:         <span class="string">rgba(145,158,171,0.32)</span>;
+}
+
+body {
+  <span class="prop">background-color</span>: var(--background);
+  <span class="prop">color</span>: var(--text-primary);
+}</code></pre>
+            <div class="info-box purple">
+              <span class="info-icon">💡</span>
+              <span>Usar los mismos tokens CSS garantiza que el MFE se vea idéntico al host cuando se integra vía Multi-zone.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-label"><code class="inline">app/layout.tsx</code> — layout raíz con sidebar</div>
+            <pre><code><span class="keyword">import</span> <span class="string">"./globals.css"</span>;
+
+<span class="keyword">export default function</span> <span class="prop">RootLayout</span>({
+  children
+}: { children: React.ReactNode }) {
+  <span class="keyword">return</span> (
+    &lt;html lang=<span class="string">"es"</span>&gt;
+      &lt;body style={{ display: <span class="string">"flex"</span>, minHeight: <span class="string">"100vh"</span> }}&gt;
+        <span class="comment">{/* Sidebar del MFE */}</span>
+        &lt;Sidebar /&gt;
+        <span class="comment">{/* Contenido principal */}</span>
+        &lt;main style={{ flex: <span class="number">1</span>, backgroundColor: <span class="string">"var(--background)"</span> }}&gt;
+          &lt;TopBar /&gt;
+          {children}
+        &lt;/main&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-label"><code class="inline">app/page.tsx</code> — página principal del módulo</div>
+            <pre><code><span class="keyword">"use client"</span>;
+
+<span class="keyword">export default function</span> <span class="prop">OrdersPage</span>() {
+  <span class="keyword">const</span> API = process.env.NEXT_PUBLIC_API_URL ?? <span class="string">"http://localhost:3000"</span>;
+
+  <span class="comment">// Aquí va la lógica del módulo</span>
+  <span class="keyword">return</span> (
+    &lt;div className=<span class="string">"p-6"</span>&gt;
+      &lt;h1&gt;Módulo de Órdenes&lt;/h1&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+            <div class="info-box blue">
+              <span class="info-icon">ℹ️</span>
+              <span>Con <code class="inline">basePath: "/dashboard/orders"</code>, la ruta <code class="inline">app/page.tsx</code> responde en <strong>/dashboard/orders</strong>. No necesitas crear carpetas intermedias.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr/>
+      <p style="font-size:0.8rem; color:#637381;"><strong>Estructura mínima de archivos:</strong></p>
+      <pre><code>orders-mfe/
+├── app/
+│   ├── globals.css          <span class="comment">← tokens CSS (copiar del host)</span>
+│   ├── layout.tsx           <span class="comment">← layout con sidebar</span>
+│   ├── page.tsx             <span class="comment">← /dashboard/orders</span>
+│   ├── new/
+│   │   └── page.tsx         <span class="comment">← /dashboard/orders/new</span>
+│   └── edit/[id]/
+│       └── page.tsx         <span class="comment">← /dashboard/orders/edit/:id</span>
+├── .env.local               <span class="comment">← NEXT_PUBLIC_API_URL</span>
+├── next.config.ts           <span class="comment">← basePath (CRÍTICO)</span>
+├── package.json
+├── postcss.config.mjs
+└── tsconfig.json</code></pre>
+    </div>
+  </div>
+
+  <!-- PASO 3: INTEGRAR EN HOST -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-orange">③</div>
+      <div>
+        <div class="section-title">Paso 3 — Integrar en el Host</div>
+        <div class="section-subtitle">Cambios en dashboard-nextjs para enrutar al MFE</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-label">Agregar rewrite en <code class="inline">next.config.ts</code> del host</div>
+            <pre><code><span class="keyword">const</span> nextConfig: NextConfig = {
+  <span class="keyword">async</span> <span class="prop">rewrites</span>() {
+    <span class="keyword">return</span> [
+      <span class="comment">// MFE existente — Transactions (puerto 3001)</span>
+      {
+        <span class="prop">source</span>:      <span class="string">"/dashboard/transactions/:path*"</span>,
+        <span class="prop">destination</span>: <span class="string">"http://localhost:3001/dashboard/transactions/:path*"</span>,
+      },
+      <span class="comment">// ✅ NUEVO MFE — Orders (puerto 3002)</span>
+      <span class="hl">{
+        <span class="prop">source</span>:      <span class="string">"/dashboard/orders"</span>,
+        <span class="prop">destination</span>: <span class="string">"http://localhost:3002/dashboard/orders"</span>,
+      },
+      {
+        <span class="prop">source</span>:      <span class="string">"/dashboard/orders/:path*"</span>,
+        <span class="prop">destination</span>: <span class="string">"http://localhost:3002/dashboard/orders/:path*"</span>,
+      },</span>
+    ];
+  },
+};</code></pre>
+            <div class="info-box orange">
+              <span class="info-icon">⚠️</span>
+              <span>Siempre agrega <strong>dos entradas</strong> por MFE: una para la ruta exacta (<code class="inline">/dashboard/orders</code>) y otra para sub-rutas (<code class="inline">/dashboard/orders/:path*</code>).</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-label">Agregar CORS a la API del host si el MFE la necesita</div>
+            <pre><code><span class="comment">// app/api/orders/route.ts (o el endpoint que use el MFE)</span>
+<span class="keyword">const</span> CORS_HEADERS = {
+  <span class="prop">"Access-Control-Allow-Origin"</span>:  <span class="string">"http://localhost:3002"</span>,
+  <span class="prop">"Access-Control-Allow-Methods"</span>: <span class="string">"GET, POST, PUT, DELETE, OPTIONS"</span>,
+  <span class="prop">"Access-Control-Allow-Headers"</span>: <span class="string">"Content-Type, Authorization"</span>,
+};
+
+<span class="keyword">export async function</span> <span class="prop">OPTIONS</span>() {
+  <span class="keyword">return new</span> NextResponse(<span class="value">null</span>, { status: <span class="number">204</span>, headers: CORS_HEADERS });
+}
+
+<span class="keyword">export async function</span> <span class="prop">GET</span>() {
+  <span class="keyword">await</span> connectDB();
+  <span class="keyword">const</span> data = <span class="keyword">await</span> Order.find().sort({ createdAt: <span class="number">-1</span> });
+  <span class="keyword">return</span> NextResponse.json(data, { headers: CORS_HEADERS });
+}</code></pre>
+            <div class="info-box green">
+              <span class="info-icon">✅</span>
+              <span>CORS solo es necesario si el MFE llama directamente a la API del host (<code class="inline">localhost:3000/api/...</code>). Las peticiones que pasan por el rewrite no necesitan CORS.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-label">Crear página fallback en el host (opcional pero recomendado)</div>
+            <pre><code><span class="comment">// app/dashboard/orders/page.tsx</span>
+<span class="comment">// Solo se muestra cuando el MFE NO está corriendo.</span>
+<span class="comment">// El rewrite en next.config.ts tiene precedencia cuando el MFE está activo.</span>
+
+<span class="keyword">export default function</span> <span class="prop">OrdersFallbackPage</span>() {
+  <span class="keyword">return</span> (
+    &lt;div&gt;
+      &lt;p&gt;El MFE de Orders no está disponible.&lt;/p&gt;
+      &lt;p&gt;Inicia el servidor: cd orders-mfe &amp;&amp; npm run dev&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 4: LEVANTAR -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-indigo">④</div>
+      <div>
+        <div class="section-title">Paso 4 — Levantar y probar</div>
+        <div class="section-subtitle">Comandos para iniciar host y MFE</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-label">Terminal 1 — Host</div>
+            <pre><code>cd dashboard-nextjs
+<span class="comment"># Primera vez o tras cambios en next.config.ts:</span>
+rm -rf .next &amp;&amp; npm run dev
+<span class="comment"># Resto de veces:</span>
+npm run dev</code></pre>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-label">Terminal 2 — MFE (primera vez)</div>
+            <pre><code>cd orders-mfe
+npm install
+npm run dev</code></pre>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-label">Verificar en el navegador</div>
+            <pre><code><span class="comment"># ✅ Con MFE activo → muestra el módulo Orders</span>
+http://localhost:3000/dashboard/orders
+
+<span class="comment"># ✅ Sin MFE → muestra la página fallback del host</span>
+http://localhost:3000/dashboard/orders</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLA PUERTOS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-rose">📋</div>
+      <div>
+        <div class="section-title">Registro de puertos y módulos</div>
+        <div class="section-subtitle">Lleva un control de los MFEs del proyecto</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Puerto</th>
+            <th>Módulo / MFE</th>
+            <th>Ruta en el host</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code class="inline">3000</code></td>
+            <td>Host — dashboard-nextjs</td>
+            <td><code class="inline">/</code></td>
+            <td>✅ Host principal</td>
+          </tr>
+          <tr>
+            <td><code class="inline">3001</code></td>
+            <td>transactions-mfe</td>
+            <td><code class="inline">/dashboard/transactions</code></td>
+            <td>✅ Implementado</td>
+          </tr>
+          <tr>
+            <td><code class="inline">3002</code></td>
+            <td>orders-mfe (ejemplo)</td>
+            <td><code class="inline">/dashboard/orders</code></td>
+            <td>🔲 Pendiente</td>
+          </tr>
+          <tr>
+            <td><code class="inline">3003</code></td>
+            <td>reports-mfe (ejemplo)</td>
+            <td><code class="inline">/dashboard/reports</code></td>
+            <td>🔲 Pendiente</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="info-box blue" style="margin-top:16px">
+        <span class="info-icon">💡</span>
+        <span>Reserva un puerto fijo por módulo. Así evitas conflictos si levantas varios MFEs al mismo tiempo.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-green">✓</div>
+      <div>
+        <div class="section-title">Checklist — Nuevo MFE listo</div>
+        <div class="section-subtitle">Verifica que no olvidaste nada</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <ul class="checklist">
+        <li><div class="check-icon">✓</div><span><code class="inline">package.json</code> con el puerto correcto en <code class="inline">next dev -p XXXX</code></span></li>
+        <li><div class="check-icon">✓</div><span><code class="inline">next.config.ts</code> con <code class="inline">basePath: "/dashboard/modulo"</code></span></li>
+        <li><div class="check-icon">✓</div><span><code class="inline">.env.local</code> con <code class="inline">NEXT_PUBLIC_API_URL=http://localhost:3000</code></span></li>
+        <li><div class="check-icon">✓</div><span><code class="inline">globals.css</code> con los tokens CSS del host</span></li>
+        <li><div class="check-icon">✓</div><span>Rewrite agregado en <code class="inline">next.config.ts</code> del host (dos entradas: ruta exacta + <code class="inline">/:path*</code>)</span></li>
+        <li><div class="check-icon">✓</div><span>CORS habilitado en la API del host si el MFE hace llamadas directas</span></li>
+        <li><div class="check-icon">✓</div><span>Página fallback creada en <code class="inline">app/dashboard/modulo/page.tsx</code> del host</span></li>
+        <li><div class="check-icon">✓</div><span>Puerto registrado en la tabla para evitar conflictos futuros</span></li>
+        <li><div class="check-icon">✓</div><span>Host reiniciado con <code class="inline">rm -rf .next && npm run dev</code> tras cambiar <code class="inline">next.config.ts</code></span></li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

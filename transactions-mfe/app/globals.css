@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/**
+ * Tokens de diseño compartidos con el host (dashboard-nextjs).
+ * Mismo sistema de colores MUI-inspired para coherencia visual.
+ */
+:root {
+  --primary:        #4f46e5;
+  --primary-dark:   #4338ca;
+  --primary-light:  #818cf8;
+  --primary-alpha:  rgba(79, 70, 229, 0.16);
+
+  --background:     #F4F6F8;
+  --surface:        #ffffff;
+
+  --text-primary:   #212B36;
+  --text-secondary: #637381;
+  --text-disabled:  #919EAB;
+
+  --divider:        rgba(145, 158, 171, 0.24);
+  --border:         rgba(145, 158, 171, 0.32);
+
+  /* Sidebar del MFE — mismo dark navy que el host */
+  --sidebar-bg:           #1C2536;
+  --sidebar-border:       rgba(255, 255, 255, 0.08);
+  --sidebar-text:         #919EAB;
+  --sidebar-text-active:  #818CF8;
+  --sidebar-active-bg:    rgba(79, 70, 229, 0.16);
+
+  --success:  #22C55E;
+  --danger:   #EF4444;
+  --warning:  #F59E0B;
+
+  --shadow-card: 0 0 2px 0 rgba(145,158,171,0.20), 0 12px 24px -4px rgba(145,158,171,0.12);
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #DFE3E8; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #C4CDD5; }
