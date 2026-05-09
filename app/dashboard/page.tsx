@@ -110,14 +110,14 @@ export default function DashboardPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
-            Datos de mercado en tiempo real • CoinGecko API
+          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+          <p className="text-slate-500 text-sm mt-0.5">
+            Datos de mercado en tiempo real · CoinGecko API
           </p>
         </div>
         {/* Indicador de datos en vivo */}
-        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-xs font-medium px-3 py-1.5 rounded-full">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           En vivo
         </div>
       </div>
@@ -131,6 +131,7 @@ export default function DashboardPage() {
           value={formatPrice(bitcoin?.current_price ?? 0)}
           change={bitcoin?.price_change_percentage_24h}
           subtitle={`Market cap: ${formatMarketCap(bitcoin?.market_cap ?? 0)}`}
+          accent="amber"
         />
 
         {/* Ethereum */}
@@ -140,6 +141,7 @@ export default function DashboardPage() {
           value={formatPrice(ethereum?.current_price ?? 0)}
           change={ethereum?.price_change_percentage_24h}
           subtitle={`Market cap: ${formatMarketCap(ethereum?.market_cap ?? 0)}`}
+          accent="indigo"
         />
 
         {/* Top Gainer */}
@@ -149,6 +151,7 @@ export default function DashboardPage() {
           value={topGainer?.name ?? "—"}
           change={topGainer?.price_change_percentage_24h}
           subtitle={formatPrice(topGainer?.current_price ?? 0)}
+          accent="emerald"
         />
 
         {/* Top Loser */}
@@ -158,18 +161,19 @@ export default function DashboardPage() {
           value={topLoser?.name ?? "—"}
           change={topLoser?.price_change_percentage_24h}
           subtitle={formatPrice(topLoser?.current_price ?? 0)}
+          accent="rose"
         />
       </div>
 
       {/* ── Sección: Gráfico + Tabla Top 10 ── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Gráfico de barras 24h */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <div className="mb-4">
-            <h2 className="text-base font-semibold text-gray-900">
+            <h2 className="text-sm font-semibold text-slate-900">
               Variación de Precio — 24h
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5">
               Top 8 criptomonedas por capitalización de mercado
             </p>
           </div>
@@ -178,69 +182,69 @@ export default function DashboardPage() {
         </div>
 
         {/* Tabla top 10 */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <div className="mb-4">
-            <h2 className="text-base font-semibold text-gray-900">
+            <h2 className="text-sm font-semibold text-slate-900">
               Top 10 Criptomonedas
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5">
               Ordenadas por capitalización de mercado
             </p>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto -mx-1">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left pb-2 text-gray-500 font-medium text-xs">#</th>
-                  <th className="text-left pb-2 text-gray-500 font-medium text-xs">Moneda</th>
-                  <th className="text-right pb-2 text-gray-500 font-medium text-xs">Precio</th>
-                  <th className="text-right pb-2 text-gray-500 font-medium text-xs">24h</th>
+                <tr className="border-b border-slate-100">
+                  <th className="text-left pb-3 pl-1 text-slate-500 font-semibold text-xs uppercase tracking-wide">#</th>
+                  <th className="text-left pb-3 text-slate-500 font-semibold text-xs uppercase tracking-wide">Moneda</th>
+                  <th className="text-right pb-3 text-slate-500 font-semibold text-xs uppercase tracking-wide">Precio</th>
+                  <th className="text-right pb-3 pr-1 text-slate-500 font-semibold text-xs uppercase tracking-wide">24h</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-slate-50">
                 {coins.slice(0, 10).map((coin) => {
                   const isPositive = coin.price_change_percentage_24h >= 0;
                   return (
-                    <tr key={coin.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={coin.id} className="hover:bg-slate-50 transition-colors group">
                       {/* Rank */}
-                      <td className="py-2.5 pr-2 text-gray-400 text-xs font-mono">
+                      <td className="py-3 pr-2 pl-1 text-slate-400 text-xs font-mono w-6">
                         {coin.market_cap_rank}
                       </td>
                       {/* Nombre y símbolo */}
-                      <td className="py-2.5">
-                        <div className="flex items-center gap-2">
+                      <td className="py-3">
+                        <div className="flex items-center gap-2.5">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={coin.image}
                             alt={coin.name}
-                            className="w-6 h-6 rounded-full"
+                            className="w-7 h-7 rounded-full ring-1 ring-slate-100"
                           />
                           <div>
-                            <p className="font-medium text-gray-900 leading-none">
+                            <p className="font-semibold text-slate-800 leading-none text-xs">
                               {coin.name}
                             </p>
-                            <p className="text-xs text-gray-400 uppercase mt-0.5">
+                            <p className="text-xs text-slate-400 uppercase mt-0.5 font-mono">
                               {coin.symbol}
                             </p>
                           </div>
                         </div>
                       </td>
                       {/* Precio */}
-                      <td className="py-2.5 text-right font-mono text-gray-900">
+                      <td className="py-3 text-right font-mono text-slate-800 text-xs font-semibold">
                         {formatPrice(coin.current_price)}
                       </td>
                       {/* Cambio 24h */}
-                      <td className="py-2.5 text-right">
+                      <td className="py-3 text-right pr-1">
                         <span
-                          className={`inline-block text-xs font-semibold px-1.5 py-0.5 rounded ${
+                          className={`inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
                             isPositive
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-600"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-red-50 text-red-600"
                           }`}
                         >
-                          {isPositive ? "+" : ""}
-                          {coin.price_change_percentage_24h?.toFixed(2)}%
+                          {isPositive ? "↑" : "↓"}
+                          {Math.abs(coin.price_change_percentage_24h)?.toFixed(2)}%
                         </span>
                       </td>
                     </tr>
@@ -253,12 +257,12 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Sección: Transacciones recientes ── */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
         <div className="mb-4">
-          <h2 className="text-base font-semibold text-gray-900">
+          <h2 className="text-sm font-semibold text-slate-900">
             Transacciones Recientes
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-slate-400 mt-0.5">
             Últimas operaciones registradas en el sistema
           </p>
         </div>

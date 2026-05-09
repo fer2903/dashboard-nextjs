@@ -60,15 +60,15 @@ export default function UsersPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Usuarios</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <h1 className="text-2xl font-bold text-slate-900">Usuarios</h1>
+          <p className="text-slate-500 text-sm mt-0.5">
             Usuarios registrados en el sistema
           </p>
         </div>
 
         {/* Contador de usuarios */}
         {users && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold px-4 py-2 rounded-full">
+          <div className="bg-indigo-50 border border-indigo-200 text-indigo-700 text-sm font-semibold px-4 py-2 rounded-full">
             {users.length} {users.length === 1 ? "usuario" : "usuarios"}
           </div>
         )}
@@ -76,7 +76,7 @@ export default function UsersPage() {
 
       {/* ── Estado de carga ── */}
       {loading && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
           <div className="animate-pulse space-y-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center gap-4">
@@ -105,7 +105,7 @@ export default function UsersPage() {
 
       {/* ── Sin usuarios ── */}
       {!loading && !error && users && users.length === 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-12 text-center">
           <p className="text-4xl mb-3">👥</p>
           <p className="font-semibold text-gray-700">No hay usuarios registrados</p>
           <p className="text-sm text-gray-400 mt-1">
@@ -116,10 +116,10 @@ export default function UsersPage() {
 
       {/* ── Tabla de usuarios ── */}
       {!loading && !error && users && users.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
+              <tr className="bg-slate-50 border-b border-slate-100">
                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Usuario
                 </th>
@@ -134,11 +134,11 @@ export default function UsersPage() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-50">
               {users.map((user) => (
                 <tr
                   key={user._id}
-                  className="hover:bg-gray-50 transition-colors group"
+                  className="hover:bg-slate-50 transition-colors group"
                 >
                   {/* Avatar + Nombre */}
                   <td className="px-6 py-4">
