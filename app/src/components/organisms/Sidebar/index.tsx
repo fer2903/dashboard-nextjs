@@ -52,7 +52,10 @@ const IconLogo = () => (
 
 // ── Definición de rutas ─────────────────────────────────────────────
 
-type NavItem = { href: string; label: string; icon: React.ReactNode };
+// mfe: true → usa <a> nativo para forzar navegación HTTP completa
+// y que el rewrite de next.config.ts se active correctamente.
+// Con <Link> (client-side) los rewrites se saltan.
+type NavItem = { href: string; label: string; icon: React.ReactNode; mfe?: boolean };
 
 const NAV_GENERAL: NavItem[] = [
   { href: "/dashboard",       label: "Dashboard",      icon: <IconDashboard /> },
@@ -60,7 +63,7 @@ const NAV_GENERAL: NavItem[] = [
 
 const NAV_MANAGEMENT: NavItem[] = [
   { href: "/dashboard/users",        label: "Usuarios",       icon: <IconUsers /> },
-  { href: "/dashboard/transactions", label: "Transacciones",  icon: <IconTransactions /> },
+  { href: "/dashboard/transactions", label: "Transacciones",  icon: <IconTransactions />, mfe: true },
   { href: "/dashboard/payments",     label: "Pagos",          icon: <IconPayments /> },
 ];
 
@@ -89,50 +92,63 @@ const NavGroup = ({
             ? pathname === "/dashboard"
             : pathname.startsWith(item.href);
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`
-              group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[0.875rem] font-medium
-              transition-all duration-150 relative
-              ${isActive
-                ? "text-[#818CF8]"
-                : "hover:text-[#C4CDD5]"
-              }
-            `}
-            style={{
-              color: isActive ? "#818CF8" : "#637381",
-              backgroundColor: isActive ? "rgba(79, 70, 229, 0.16)" : "transparent",
-            }}
-            onMouseEnter={e => {
-              if (!isActive) {
-                (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.06)";
-              }
-            }}
-            onMouseLeave={e => {
-              if (!isActive) {
-                (e.currentTarget as HTMLElement).style.backgroundColor = "transparent";
-              }
-            }}
-          >
-            {/* Indicador activo lateral */}
+        // Rutas MFE → <a> nativo para forzar full page load y activar rewrite
+        // Rutas internas → <Link> para navegación client-side optimizada
+        const sharedStyle = {
+          color: isActive ? "#818CF8" : "#637381",
+          backgroundColor: isActive ? "rgba(79, 70, 229, 0.16)" : "transparent",
+        };
+        const sharedClass = `
+          group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[0.875rem] font-medium
+          transition-all duration-150 relative
+          ${isActive ? "text-[#818CF8]" : "hover:text-[#C4CDD5]"}
+        `;
+        const sharedHandlers = {
+          onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+            if (!isActive) {
+              (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.06)";
+            }
+          },
+          onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
+            if (!isActive) {
+              (e.currentTarget as HTMLElement).style.backgroundColor = "transparent";
+            }
+          },
+        };
+        const inner = (
+          <>
             {isActive && (
               <span
                 className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[24px] rounded-r-full"
                 style={{ backgroundColor: "#818CF8" }}
               />
             )}
-
-            {/* Icono */}
-            <span
-              className="shrink-0 transition-colors"
-              style={{ color: isActive ? "#818CF8" : "#637381" }}
-            >
+            <span className="shrink-0 transition-colors" style={{ color: isActive ? "#818CF8" : "#637381" }}>
               {item.icon}
             </span>
-
             <span>{item.label}</span>
+          </>
+        );
+
+        return item.mfe ? (
+          <a
+            key={item.href}
+            href={item.href}
+            className={sharedClass}
+            style={sharedStyle}
+            {...sharedHandlers}
+          >
+            {inner}
+          </a>
+        ) : (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={sharedClass}
+            style={sharedStyle}
+            {...sharedHandlers}
+          >
+            {inner}
           </Link>
         );
       })}
