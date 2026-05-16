@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Guía de Despliegue — Dashboard + MFEs en AWS EC2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #F4F6F8; color: #212B36;
+    line-height: 1.75; padding: 40px 20px 100px; font-size: 15px;
+  }
+  .page { max-width: 940px; margin: 0 auto; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+    border-radius: 20px; padding: 52px 52px 44px; margin-bottom: 44px;
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content:''; position:absolute; bottom:-100px; right:-80px;
+    width:320px; height:320px; border-radius:50%;
+    background:rgba(99,102,241,0.10);
+  }
+  .hero-tag {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(99,102,241,0.22); color:#818CF8;
+    font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+    padding:5px 14px; border-radius:20px; margin-bottom:18px;
+  }
+  .hero h1 { font-size:2.1rem; font-weight:800; color:#fff; line-height:1.2; margin-bottom:12px; }
+  .hero p  { color:#94A3B8; font-size:0.95rem; max-width:600px; line-height:1.7; }
+  .hero-pills { display:flex; gap:12px; flex-wrap:wrap; margin-top:26px; }
+  .pill {
+    display:flex; align-items:center; gap:7px;
+    background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12);
+    border-radius:30px; padding:5px 14px; font-size:12px; color:#CBD5E1;
+  }
+
+  /* CARD */
+  .card {
+    background:#fff; border-radius:16px; overflow:hidden; margin-bottom:28px;
+    box-shadow:0 0 2px rgba(145,158,171,0.20), 0 12px 24px -4px rgba(145,158,171,0.12);
+  }
+  .card-head {
+    display:flex; align-items:flex-start; gap:16px;
+    padding:22px 30px; border-bottom:1px solid rgba(145,158,171,0.13);
+  }
+  .badge {
+    min-width:42px; height:42px; border-radius:12px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px; font-weight:800; color:#fff;
+  }
+  .b-blue   { background:linear-gradient(135deg,#60A5FA,#2563EB); }
+  .b-indigo { background:linear-gradient(135deg,#818CF8,#4F46E5); }
+  .b-purple { background:linear-gradient(135deg,#A78BFA,#7C3AED); }
+  .b-green  { background:linear-gradient(135deg,#34D399,#059669); }
+  .b-orange { background:linear-gradient(135deg,#FB923C,#EA580C); }
+  .b-rose   { background:linear-gradient(135deg,#FB7185,#E11D48); }
+  .b-teal   { background:linear-gradient(135deg,#2DD4BF,#0D9488); }
+  .b-yellow { background:linear-gradient(135deg,#FCD34D,#D97706); }
+  .b-slate  { background:linear-gradient(135deg,#94A3B8,#475569); }
+
+  .card-title    { font-size:1rem; font-weight:700; color:#212B36; }
+  .card-subtitle { font-size:0.8rem; color:#637381; margin-top:3px; }
+  .card-body { padding:26px 30px; }
+
+  /* INFO */
+  .info { display:flex; gap:12px; align-items:flex-start;
+    border-radius:10px; padding:14px 18px;
+    font-size:0.845rem; margin:14px 0; line-height:1.65; }
+  .info.blue   { background:rgba(37,99,235,0.07);  border:1px solid rgba(37,99,235,0.18);  color:#1E40AF; }
+  .info.green  { background:rgba(5,150,105,0.07);  border:1px solid rgba(5,150,105,0.18);  color:#065F46; }
+  .info.orange { background:rgba(234,88,12,0.07);  border:1px solid rgba(234,88,12,0.18);  color:#9A3412; }
+  .info.purple { background:rgba(124,58,237,0.07); border:1px solid rgba(124,58,237,0.18); color:#5B21B6; }
+  .info.red    { background:rgba(239,68,68,0.07);  border:1px solid rgba(239,68,68,0.18);  color:#991B1B; }
+  .ico { font-size:17px; flex-shrink:0; margin-top:1px; }
+
+  /* EXPLAIN */
+  .explain {
+    background:#F8FAFC; border-left:4px solid #6366f1;
+    border-radius:0 10px 10px 0; padding:16px 20px; margin-bottom:18px;
+    font-size:0.875rem; color:#374151; line-height:1.7;
+  }
+
+  /* CODE */
+  pre {
+    background:#0F172A; border-radius:10px; padding:18px 22px;
+    overflow-x:auto; margin:12px 0; position:relative;
+  }
+  .file-label {
+    position:absolute; top:10px; right:14px;
+    font-size:10px; font-family:monospace; color:#475569; letter-spacing:0.05em;
+  }
+  code { font-family:'Cascadia Code','Fira Code','JetBrains Mono',monospace; font-size:0.8rem; color:#94A3B8; }
+  pre code { display:block; line-height:1.9; }
+  .cm { color:#475569; } .kw { color:#F472B6; } .st { color:#34D399; }
+  .nm { color:#FB923C; } .pr { color:#60A5FA; } .vl { color:#818CF8; }
+  .hl { background:rgba(99,102,241,0.16); border-radius:3px; padding:0 3px; }
+  .hl-green { background:rgba(34,197,94,0.14); border-radius:3px; padding:0 3px; }
+  code.tag         { background:rgba(79,70,229,0.10);  color:#4F46E5; padding:2px 8px; border-radius:5px; font-size:0.8rem; }
+  code.tag-green   { background:rgba(5,150,105,0.10);  color:#047857; padding:2px 8px; border-radius:5px; font-size:0.8rem; }
+  code.tag-orange  { background:rgba(234,88,12,0.10);  color:#C2410C; padding:2px 8px; border-radius:5px; font-size:0.8rem; }
+  code.tag-red     { background:rgba(239,68,68,0.10);  color:#DC2626; padding:2px 8px; border-radius:5px; font-size:0.8rem; }
+
+  /* STEPS */
+  .steps { display:flex; flex-direction:column; gap:24px; }
+  .step  { display:flex; gap:16px; }
+  .step-num {
+    width:28px; height:28px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg,#6366f1,#4f46e5);
+    color:#fff; font-size:12px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; margin-top:3px;
+  }
+  .step-content { flex:1; min-width:0; }
+  .step-label { font-size:0.925rem; font-weight:700; color:#212B36; margin-bottom:6px; }
+  .step-desc  { font-size:0.855rem; color:#637381; margin-bottom:10px; line-height:1.65; }
+
+  /* DIAGRAM */
+  .diagram {
+    background:#0F172A; border-radius:12px; padding:24px 28px;
+    font-family:monospace; font-size:0.8rem; line-height:2.2; margin:14px 0;
+  }
+  .d-title  { color:#60A5FA; font-weight:700; }
+  .d-host   { color:#60A5FA; }
+  .d-mfe    { color:#A78BFA; }
+  .d-nginx  { color:#34D399; }
+  .d-arrow  { color:#475569; }
+  .d-green  { color:#34D399; }
+  .d-orange { color:#FB923C; }
+  .d-gray   { color:#94A3B8; }
+
+  /* TABLE */
+  table { width:100%; border-collapse:collapse; font-size:0.845rem; margin:14px 0; }
+  th {
+    background:#F4F6F8; color:#637381; font-weight:700;
+    font-size:0.75rem; text-transform:uppercase; letter-spacing:0.07em;
+    padding:10px 16px; text-align:left; border-bottom:1px solid rgba(145,158,171,0.24);
+  }
+  td { padding:11px 16px; border-bottom:1px solid rgba(145,158,171,0.10); color:#212B36; vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+
+  /* TREE */
+  .tree {
+    background:#0F172A; border-radius:10px; padding:18px 22px;
+    font-family:monospace; font-size:0.8rem; line-height:2; margin:12px 0;
+  }
+  .t-folder { color:#60A5FA; } .t-file { color:#94A3B8; }
+  .t-new    { color:#34D399; } .t-note { color:#475569; }
+
+  /* CHECKS */
+  .checks { list-style:none; display:flex; flex-direction:column; gap:10px; }
+  .checks li { display:flex; align-items:flex-start; gap:10px; font-size:0.875rem; }
+  .chk {
+    width:20px; height:20px; border-radius:50; flex-shrink:0;
+    background:linear-gradient(135deg,#34D399,#059669);
+    display:flex; align-items:center; justify-content:center;
+    font-size:9px; font-weight:900; color:#fff; border-radius:50%; margin-top:2px;
+  }
+
+  /* MISC */
+  hr { border:none; border-top:1px solid rgba(145,158,171,0.14); margin:20px 0; }
+  p  { font-size:0.875rem; color:#637381; margin-bottom:10px; line-height:1.7; }
+  strong { color:#212B36; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0; }
+  @media(max-width:640px){ .two-col { grid-template-columns:1fr; } }
+  .mini { background:#F8FAFC; border:1px solid rgba(145,158,171,0.18); border-radius:10px; padding:14px 16px; }
+  .mini-title { font-size:0.8rem; font-weight:700; color:#212B36; margin-bottom:5px; }
+  .mini-desc  { font-size:0.8rem; color:#637381; line-height:1.55; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ═══════════════════════════════════════════ HERO -->
+<div class="hero">
+  <div class="hero-tag">🚀 Guía de producción</div>
+  <h1>Despliegue en AWS EC2<br>con Docker + Nginx</h1>
+  <p>
+    Guía paso a paso para llevar el dashboard y sus microfrontends a producción
+    en una instancia Ubuntu de AWS EC2, con dominio propio, HTTPS y capacidad de escala.
+  </p>
+  <div class="hero-pills">
+    <div class="pill">🐳 Docker + Docker Compose</div>
+    <div class="pill">🌐 Nginx reverse proxy</div>
+    <div class="pill">☁️ AWS EC2 — Ubuntu 22.04</div>
+    <div class="pill">🔒 SSL gratis con Let's Encrypt</div>
+    <div class="pill">📡 DNS + subdominos por MFE</div>
+    <div class="pill">⚖️ Escalado horizontal</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ ARQUITECTURA -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-blue">🗺</div>
+    <div>
+      <div class="card-title">Arquitectura de producción</div>
+      <div class="card-subtitle">Cómo se conectan todas las piezas en el servidor</div>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="explain">
+      En desarrollo usas múltiples terminales y puertos distintos. En producción
+      <strong>todo el tráfico entra por un solo punto</strong> (Nginx en el puerto 443/HTTPS)
+      y se distribuye internamente a cada contenedor Docker. El usuario final solo ve
+      tu dominio — nunca los puertos internos.
+    </div>
+
+    <div class="diagram">
+      <div><span class="d-gray">Internet</span></div>
+      <div style="padding-left:4px"><span class="d-arrow">  │</span></div>
+      <div><span class="d-nginx">Nginx (puerto 443 HTTPS / 80 HTTP)</span>  <span class="d-gray">← único punto de entrada</span></div>
+      <div><span class="d-arrow">  ├──</span> <span class="d-gray">tudominio.com/*</span>  <span class="d-arrow">──▶</span>  <span class="d-host">Host container :3000</span>  <span class="d-gray">(Next.js — dashboard)</span></div>
+      <div><span class="d-arrow">  ├──</span> <span class="d-gray">mfe-tx.tudominio.com/*</span>  <span class="d-arrow">──▶</span>  <span class="d-mfe">MFE transactions :3001</span></div>
+      <div><span class="d-arrow">  └──</span> <span class="d-gray">mfe-users.tudominio.com/*</span>  <span class="d-arrow">──▶</span>  <span class="d-mfe">MFE users :3002</span></div>
+      <div style="margin-top:10px; padding-left:4px"><span class="d-gray">Red Docker interna (los containers se comunican entre sí)</span></div>
+      <div style="padding-left:4px"><span class="d-host">Host</span>  <span class="d-arrow">─────────────────▶</span>  <span class="d-orange">MongoDB Atlas</span>  <span class="d-gray">(base de datos en la nube)</span></div>
+    </div>
+
+    <div class="two-col" style="margin-top:16px">
+      <div class="mini">
+        <div class="mini-title">🐳 ¿Por qué Docker?</div>
+        <div class="mini-desc">
+          Garantiza que la app funcione igual en tu máquina y en el servidor.
+          Cada MFE vive en su propio contenedor aislado — un error en uno no afecta a los demás.
+          Escalar es tan simple como decir "quiero 3 copias de este contenedor".
+        </div>
+      </div>
+      <div class="mini">
+        <div class="mini-title">📡 ¿Por qué subdominios por MFE?</div>
+        <div class="mini-desc">
+          Los iframes del host necesitan una URL pública para cargar los MFEs.
+          Usando subdominios (<code style="font-size:11px">mfe-tx.tudominio.com</code>) cada MFE
+          tiene su propia dirección, Nginx lo enruta al container correcto y
+          el certificado SSL los cubre a todos con un wildcard.
+        </div>
+      </div>
+    </div>
+
+    <div class="info orange" style="margin-top:4px">
+      <span class="ico">⚠️</span>
+      <span><strong>Acción requerida antes de desplegar:</strong> los iframes del host tienen
+      <code style="font-size:12px">src="http://localhost:3001"</code> hardcodeado. En producción deben
+      leer la URL desde una variable de entorno. El <strong>Paso 1</strong> de esta guía cubre ese ajuste.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ PASO 1 — AJUSTES DE CÓDIGO -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-rose">1</div>
+    <div>
+      <div class="card-title">Ajustar el código para producción</div>
+      <div class="card-subtitle">Cambiar las URLs hardcodeadas de localhost por variables de entorno</div>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="explain">
+      Actualmente los iframes del host apuntan a <code style="font-size:12px">http://localhost:3001</code>.
+      En producción ese URL no existe — el servidor es <code style="font-size:12px">tudominio.com</code>.
+      La solución: leer la URL del MFE desde una variable de entorno que cambia según el ambiente.
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-label">Editar la página de Transacciones del host</div>
+          <div class="step-desc">Cambiar el src del iframe para leer desde una variable de entorno.</div>
+          <pre><code><span class="file-label">app/dashboard/transactions/page.tsx</span><span class="cm">// Antes (hardcodeado — solo funciona en local):
+// src="http://localhost:3001/dashboard/transactions"</span>
+
+<span class="cm">// Después (lee el entorno):</span>
+<span class="kw">const</span> MFE_TX = process.env.NEXT_PUBLIC_TRANSACTIONS_MFE_URL
+              ?? <span class="st">"http://localhost:3001"</span>;  <span class="cm">← fallback para desarrollo</span>
+
+<span class="kw">export default function</span> <span class="pr">TransactionsPage</span>() {
+  <span class="kw">return</span> (
+    &lt;iframe
+      <span class="hl">src={`${MFE_TX}/dashboard/transactions`}</span>
+      title=<span class="st">"Módulo de Transacciones"</span>
+      style={{ width:<span class="st">"100%"</span>, height:<span class="st">"calc(100vh - 64px)"</span>, border:<span class="st">"none"</span>, display:<span class="st">"block"</span> }}
+    /&gt;
+  );
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-label">Hacer lo mismo para cada página con iframe (ej: Usuarios)</div>
+          <pre><code><span class="file-label">app/dashboard/users/page.tsx</span><span class="kw">const</span> MFE_USERS = process.env.NEXT_PUBLIC_USERS_MFE_URL
+                ?? <span class="st">"http://localhost:3002"</span>;
+
+<span class="kw">export default function</span> <span class="pr">UsersPage</span>() {
+  <span class="kw">return</span> (
+    &lt;iframe
+      <span class="hl">src={`${MFE_USERS}/dashboard/users`}</span>
+      title=<span class="st">"Módulo de Usuarios"</span>
+      style={{ width:<span class="st">"100%"</span>, height:<span class="st">"calc(100vh - 64px)"</span>, border:<span class="st">"none"</span>, display:<span class="st">"block"</span> }}
+    /&gt;
+  );
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-label">Crear <code class="tag">.env.local</code> en el host para desarrollo (no se sube a git)</div>
+          <pre><code><span class="file-label">dashboard-nextjs/.env.local</span><span class="cm"># Desarrollo local</span>
+<span class="pr">NEXT_PUBLIC_TRANSACTIONS_MFE_URL</span>=<span class="st">http://localhost:3001</span>
+<span class="pr">NEXT_PUBLIC_USERS_MFE_URL</span>=<span class="st">http://localhost:3002</span>
+<span class="pr">MONGODB_URI</span>=<span class="st">mongodb+srv://usuario:pass@cluster.mongodb.net/dbname</span></code></pre>
+          <div class="info blue">
+            <span class="ico">ℹ️</span>
+            <span>Este archivo es solo para desarrollo. En producción las variables se pasan directamente a Docker.
+            <strong>Agrega <code style="font-size:12px">.env.local</code> a tu <code style="font-size:12px">.gitignore</code></strong> para no subir credenciales al repositorio.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ PASO 2 — DOCKERFILES -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-blue">2</div>
+    <div>
+      <div class="card-title">Crear los Dockerfiles</div>
+      <div class="card-subtitle">Un Dockerfile por aplicación — le dice a Docker cómo construir cada imagen</div>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="explain">
+      Un <strong>Dockerfile</strong> es una receta: le dice a Docker "descarga Node, copia el código,
+      instala las librerías y arranca la app". El resultado es una <strong>imagen</strong> que puede
+      ejecutarse en cualquier servidor como si fuera una cápsula sellada.
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-label">Dockerfile del Host <code class="tag">dashboard-nextjs/Dockerfile</code></div>
+          <pre><code><span class="file-label">dashboard-nextjs/Dockerfile</span><span class="cm"># ── Etapa 1: construir la app ──────────────────────────────</span>
+<span class="kw">FROM</span> node:<span class="nm">20</span>-alpine <span class="kw">AS</span> builder
+<span class="kw">WORKDIR</span> /app
+
+<span class="cm"># Copiar manifiestos de dependencias primero (mejor cache de Docker)</span>
+<span class="kw">COPY</span> package.json package-lock.json* ./
+<span class="kw">RUN</span> npm ci
+
+<span class="cm"># Copiar todo el código fuente</span>
+<span class="kw">COPY</span> . .
+
+<span class="cm"># Construir Next.js para producción</span>
+<span class="cm"># Las variables NEXT_PUBLIC_* deben estar disponibles en build time</span>
+<span class="kw">ARG</span> NEXT_PUBLIC_TRANSACTIONS_MFE_URL
+<span class="kw">ARG</span> NEXT_PUBLIC_USERS_MFE_URL
+<span class="kw">RUN</span> npm run build
+
+<span class="cm"># ── Etapa 2: imagen final (más liviana, sin herramientas de build) ──</span>
+<span class="kw">FROM</span> node:<span class="nm">20</span>-alpine <span class="kw">AS</span> runner
+<span class="kw">WORKDIR</span> /app
+<span class="kw">ENV</span> NODE_ENV=production
+
+<span class="kw">COPY</span> --from=builder /app/.next/standalone ./
+<span class="kw">COPY</span> --from=builder /app/.next/static ./.next/static
+<span class="kw">COPY</span> --from=builder /app/public ./public
+
+<span class="kw">EXPOSE</span> <span class="nm">3000</span>
+<span class="kw">CMD</span> [<span class="st">"node"</span>, <span class="st">"server.js"</span>]</code></pre>
+          <div class="info orange">
+            <span class="ico">⚠️</span>
+            <span>Para que el Dockerfile use la etapa <code style="font-size:12px">standalone</code>, agrega esto a <code style="font-size:12px">next.config.ts</code> del host:
+            <pre style="margin-top:8px"><code>const nextConfig: NextConfig = {
+  <span class="hl">output: <span class="st">"standalone"</span>,</span>
+};</code></pre></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-label">Dockerfile del MFE de Transacciones <code class="tag">transactions-mfe/Dockerfile</code></div>
+          <pre><code><span class="file-label">transactions-mfe/Dockerfile</span><span class="kw">FROM</span> node:<span class="nm">20</span>-alpine <span class="kw">AS</span> builder
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> package.json package-lock.json* ./
+<span class="kw">RUN</span> npm ci
+<span class="kw">COPY</span> . .
+<span class="kw">ARG</span> NEXT_PUBLIC_API_URL
+<span class="kw">RUN</span> npm run build
+
+<span class="kw">FROM</span> node:<span class="nm">20</span>-alpine <span class="kw">AS</span> runner
+<span class="kw">WORKDIR</span> /app
+<span class="kw">ENV</span> NODE_ENV=production
+<span class="kw">COPY</span> --from=builder /app/.next/standalone ./
+<span class="kw">COPY</span> --from=builder /app/.next/static ./.next/static
+<span class="kw">EXPOSE</span> <span class="nm">3001</span>
+<span class="kw">CMD</span> [<span class="st">"node"</span>, <span class="st">"server.js"</span>]</code></pre>
+          <p>Agrega <code class="tag">output: "standalone"</code> también al <code class="tag">next.config.ts</code> del MFE.</p>
+          <p>Copia este Dockerfile para cada MFE — solo cambia el <code class="tag-orange">EXPOSE</code> por el puerto correspondiente.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-label">Crear <code class="tag">.dockerignore</code> en cada carpeta (mismo contenido para todos)</div>
+          <pre><code><span class="file-label">.dockerignore  (en dashboard-nextjs/ y en cada MFE/)</span>node_modules
+.next
+.env.local
+.env*.local
+npm-debug.log*</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ PASO 3 — DOCKER COMPOSE -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-purple">3</div>
+    <div>
+      <div class="card-title">Docker Compose — orquestar todos los contenedores</div>
+      <div class="card-subtitle">Un solo archivo para arrancar el host, los MFEs y Nginx juntos</div>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="explain">
+      <strong>Docker Compose</strong> es como un director de orquesta: levanta todos los contenedores
+      en el orden correcto, los conecta en una red privada y les pasa las variables de entorno.
+      Con un solo comando (<code style="font-size:12px">docker compose up</code>) arranca todo el sistema.
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-label">Crear <code class="tag">docker-compose.yml</code> en la raíz del proyecto</div>
+          <pre><code><span class="file-label">dashboard-nextjs/docker-compose.yml</span>services:
+
+  <span class="cm"># ── Host — dashboard principal ─────────────────────────────</span>
+  host:
+    build:
+      context: .
+      args:
+        <span class="hl">NEXT_PUBLIC_TRANSACTIONS_MFE_URL: <span class="st">https://mfe-tx.tudominio.com</span></span>
+        <span class="hl">NEXT_PUBLIC_USERS_MFE_URL:        <span class="st">https://mfe-users.tudominio.com</span></span>
+    environment:
+      MONGODB_URI: <span class="st">${MONGODB_URI}</span>          <span class="cm">← viene del .env del servidor</span>
+      NODE_ENV:    production
+    ports:
+      - <span class="st">"3000:3000"</span>
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  <span class="cm"># ── MFE Transacciones ─────────────────────────────────────</span>
+  mfe-transactions:
+    build:
+      context: ./transactions-mfe
+      args:
+        NEXT_PUBLIC_API_URL: <span class="st">https://tudominio.com</span>
+    environment:
+      NODE_ENV: production
+      PORT:     <span class="nm">3001</span>
+    ports:
+      - <span class="st">"3001:3001"</span>
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  <span class="cm"># ── MFE Usuarios (si existe) ──────────────────────────────</span>
+  mfe-users:
+    build:
+      context: ./users-mfe
+      args:
+        NEXT_PUBLIC_API_URL: <span class="st">https://tudominio.com</span>
+    environment:
+      NODE_ENV: production
+      PORT:     <span class="nm">3002</span>
+    ports:
+      - <span class="st">"3002:3002"</span>
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  <span class="cm"># ── Nginx — reverse proxy ─────────────────────────────────</span>
+  nginx:
+    image: nginx:alpine
+    ports:
+      - <span class="st">"80:80"</span>
+      - <span class="st">"443:443"</span>
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro   <span class="cm">← certificados SSL</span>
+    depends_on:
+      - host
+      - mfe-transactions
+      - mfe-users
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge</code></pre>
+          <div class="info blue">
+            <span class="ico">ℹ️</span>
+            <span>Las variables como <code style="font-size:12px">${MONGODB_URI}</code> se leen de un archivo
+            <code style="font-size:12px">.env</code> en el servidor (no el <code style="font-size:12px">.env.local</code> de desarrollo).
+            Ese archivo <strong>nunca</strong> se sube a git — se crea manualmente en el servidor.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-label">Crear el archivo <code class="tag">.env</code> del servidor (en el EC2, no en git)</div>
+          <pre><code><span class="file-label">/home/ubuntu/dashboard-nextjs/.env  (creado directamente en el servidor)</span><span class="pr">MONGODB_URI</span>=<span class="st">mongodb+srv://user:password@cluster.mongodb.net/crypto</span>
+<span class="pr">NEXTAUTH_SECRET</span>=<span class="st">tu_secreto_largo_y_aleatorio_aqui</span>
+<span class="pr">NEXTAUTH_URL</span>=<span class="st">https://tudominio.com</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ PASO 4 — NGINX -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-green">4</div>
+    <div>
+      <div class="card-title">Configurar Nginx</div>
+      <div class="card-subtitle">El router que dirige el tráfico al container correcto</div>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="explain">
+      <strong>Nginx</strong> actúa como portero: recibe todas las peticiones en el puerto 443 (HTTPS)
+      y las reenvía al container correspondiente según el dominio. También termina el SSL —
+      los containers internos trabajan con HTTP simple, Nginx maneja el cifrado.
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-label">Crear <code class="tag">nginx/nginx.conf</code> en la raíz del proyecto</div>
+          <pre><code><span class="file-label">dashboard-nextjs/nginx/nginx.conf</span>events { worker_connections <span class="nm">1024</span>; }
+
+http {
+  <span class="cm"># Redirigir HTTP → HTTPS</span>
+  server {
+    listen <span class="nm">80</span>;
+    server_name tudominio.com mfe-tx.tudominio.com mfe-users.tudominio.com;
+    return <span class="nm">301</span> https://$host$request_uri;
+  }
+
+  <span class="cm"># ── Host principal ─────────────────────────────────────</span>
+  server {
+    listen <span class="nm">443</span> ssl;
+    server_name tudominio.com;
+
+    ssl_certificate     /etc/letsencrypt/live/tudominio.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tudominio.com/privkey.pem;
+
+    location / {
+      proxy_pass         http://host:<span class="nm">3000</span>;
+      proxy_http_version <span class="nm">1.1</span>;
+      proxy_set_header   Upgrade $http_upgrade;
+      proxy_set_header   Connection 'upgrade';
+      proxy_set_header   Host $host;
+      proxy_cache_bypass $http_upgrade;
+    }
+  }
+
+  <span class="cm"># ── MFE Transacciones ──────────────────────────────────</span>
+  server {
+    listen <span class="nm">443</span> ssl;
+    server_name <span class="hl">mfe-tx.tudominio.com</span>;
+
+    ssl_certificate     /etc/letsencrypt/live/tudominio.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tudominio.com/privkey.pem;
+
+    <span class="cm"># Permitir que el host incruste este MFE en un iframe</span>
+    add_header Content-Security-Policy <span class="st">"frame-ancestors https://tudominio.com"</span>;
+
+    location / {
+      proxy_pass         http://mfe-transactions:<span class="nm">3001</span>;
+      proxy_http_version <span class="nm">1.1</span>;
+      proxy_set_header   Upgrade $http_upgrade;
+      proxy_set_header   Connection 'upgrade';
+      proxy_set_header   Host $host;
+      proxy_cache_bypass $http_upgrade;
+    }
+  }
+
+  <span class="cm"># ── MFE Usuarios ───────────────────────────────────────</span>
+  server {
+    listen <span class="nm">443</span> ssl;
+    server_name <span class="hl">mfe-users.tudominio.com</span>;
+
+    ssl_certificate     /etc/letsencrypt/live/tudominio.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tudominio.com/privkey.pem;
+
+    add_header Content-Security-Policy <span class="st">"frame-ancestors https://tudominio.com"</span>;
+
+    location / {
+      proxy_pass         http://mfe-users:<span class="nm">3002</span>;
+      proxy_http_version <span class="nm">1.1</span>;
+      proxy_set_header   Upgrade $http_upgrade;
+      proxy_set_header   Connection 'upgrade';
+      proxy_set_header   Host $host;
+      proxy_cache_bypass $http_upgrade;
+    }
+  }
+}</code></pre>
+          <div class="info purple">
+            <span class="ico">💡</span>
+            <span>El header <code style="font-size:12px">frame-ancestors</code> es la versión moderna del
+            <code style="font-size:12px">X-Frame-Options</code>. Le dice al navegador que solo el host
+            (<code style="font-size:12px">tudominio.com</code>) puede incrustar ese MFE en un iframe.
+            Sin esto, el iframe no carga por políticas de seguridad del navegador.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ PASO 5 — EC2 -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-orange">5</div>
+    <div>
+      <div class="card-title">Crear y configurar la instancia EC2</div>
+      <div class="card-subtitle">Levantar el servidor en AWS — paso a paso desde cero</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-label">Crear la instancia EC2 en AWS Console</div>
+          <div class="step-desc">Entra a <strong>console.aws.amazon.com → EC2 → Launch Instance</strong> y configura:</div>
+          <table>
+            <thead><tr><th>Campo</th><th>Valor recomendado</th><th>Por qué</th></tr></thead>
+            <tbody>
+              <tr><td>Name</td><td><code class="tag">dashboard-production</code></td><td>Identificar la instancia</td></tr>
+              <tr><td>AMI</td><td><code class="tag">Ubuntu Server 22.04 LTS</code></td><td>LTS = soporte a largo plazo, estable</td></tr>
+              <tr><td>Instance type</td><td><code class="tag">t3.medium</code> (mínimo)</td><td>2 vCPU, 4 GB RAM — suficiente para host + 2 MFEs</td></tr>
+              <tr><td>Key pair</td><td>Crear nueva → descargar <code class="tag">.pem</code></td><td>Para conectarse por SSH — guárdalo bien, no se puede recuperar</td></tr>
+              <tr><td>Security Group</td><td>Crear nuevo (ver siguiente paso)</td><td>Controla qué puertos están abiertos</td></tr>
+              <tr><td>Storage</td><td>30 GB gp3</td><td>Para Docker images + logs</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-label">Configurar el Security Group (firewall de AWS)</div>
+          <div class="step-desc">Agrega estas reglas de entrada (Inbound rules):</div>
+          <table>
+            <thead><tr><th>Tipo</th><th>Puerto</th><th>Fuente</th><th>Para qué</th></tr></thead>
+            <tbody>
+              <tr><td>SSH</td><td>22</td><td>Tu IP (<code class="tag">My IP</code>)</td><td>Acceso al servidor</td></tr>
+              <tr><td>HTTP</td><td>80</td><td>Anywhere (0.0.0.0/0)</td><td>Redirigir a HTTPS</td></tr>
+              <tr><td>HTTPS</td><td>443</td><td>Anywhere (0.0.0.0/0)</td><td>Tráfico principal</td></tr>
+            </tbody>
+          </table>
+          <div class="info red">
+            <span class="ico">🔒</span>
+            <span><strong>No abras los puertos 3000, 3001, 3002 al público.</strong>
+            Los containers deben ser accesibles solo internamente vía Nginx.
+            Si los expones, cualquiera puede acceder sin SSL ni seguridad.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-label">Asignar una IP Elástica (Elastic IP)</div>
+          <div class="step-desc">
+            EC2 → Elastic IPs → Allocate → Associate con tu instancia.
+            Una Elastic IP es una IP fija — sin esto la IP del servidor cambia cada vez que reinicias la instancia,
+            lo que rompería el DNS.
+          </div>
+          <div class="info green">
+            <span class="ico">✅</span>
+            <span>Anota esta IP — la usarás en el paso de DNS. Ejemplo: <code style="font-size:12px">54.123.45.67</code></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-label">Conectarse al servidor por SSH</div>
+          <pre><code><span class="cm"># Dar los permisos correctos al archivo de clave</span>
+chmod 400 ~/Downloads/dashboard-production.pem
+
+<span class="cm"># Conectarse (reemplaza la IP con tu Elastic IP)</span>
+ssh -i ~/Downloads/dashboard-production.pem ubuntu@<span class="hl">54.123.45.67</span></code></pre>
+          <div class="info blue">
+            <span class="ico">ℹ️</span>
+            <span>Verás un prompt como <code style="font-size:12px">ubuntu@ip-10-0-1-100:~$</code>.
+            Ya estás dentro del servidor. Todo lo que escribas a partir de aquí se ejecuta en EC2.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ PASO 6 — INSTALAR DOCKER EN UBUNTU -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-teal">6</div>
+    <div>
+      <div class="card-title">Instalar Docker en Ubuntu</div>
+      <div class="card-subtitle">Ejecuta estos comandos dentro del servidor EC2 (vía SSH)</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-label">Actualizar el sistema e instalar dependencias</div>
+          <pre><code>sudo apt update && sudo apt upgrade -y
+sudo apt install -y ca-certificates curl gnupg git</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-label">Instalar Docker (script oficial)</div>
+          <pre><code><span class="cm"># Agregar la clave GPG de Docker</span>
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+  | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+<span class="cm"># Agregar el repositorio de Docker</span>
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+<span class="cm"># Instalar Docker Engine y Compose</span>
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-label">Configurar Docker para usarlo sin sudo</div>
+          <pre><code>sudo usermod -aG docker ubuntu
+newgrp docker
+
+<span class="cm"># Verificar que Docker funciona</span>
+docker --version         <span class="cm"># Docker version 26.x.x</span>
+docker compose version   <span class="cm"># Docker Compose version v2.x.x</span></code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-label">Habilitar Docker al arranque del servidor</div>
+          <pre><code>sudo systemctl enable docker
+sudo systemctl start docker</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ PASO 7 — CLONAR Y DESPLEGAR -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-indigo">7</div>
+    <div>
+      <div class="card-title">Clonar el repositorio y hacer el primer despliegue</div>
+      <div class="card-subtitle">Traer el código al servidor y construir las imágenes Docker</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-label">Clonar el repositorio</div>
+          <pre><code>cd /home/ubuntu
+git clone https://github.com/tu-usuario/dashboard-nextjs.git
+cd dashboard-nextjs</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-label">Crear el archivo <code class="tag">.env</code> de producción en el servidor</div>
+          <pre><code>nano .env</code></pre>
+          <p>Escribe las variables de producción y guarda con <code class="tag-orange">Ctrl+O → Enter → Ctrl+X</code>:</p>
+          <pre><code>MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/crypto
+NEXTAUTH_SECRET=genera_un_secreto_largo_con_openssl_rand_base64_32
+NEXTAUTH_URL=https://tudominio.com</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-label">Instalar Certbot y obtener el certificado SSL (antes de levantar Nginx)</div>
+          <pre><code><span class="cm"># Instalar Certbot en el host EC2 (fuera de Docker)</span>
+sudo apt install -y certbot
+
+<span class="cm"># Obtener certificado wildcard para el dominio y todos sus subdominios</span>
+<span class="cm"># Requiere acceso a tu proveedor de DNS para el desafío DNS-01</span>
+sudo certbot certonly --manual --preferred-challenges dns \
+  -d tudominio.com \
+  -d <span class="hl">*.tudominio.com</span>
+
+<span class="cm"># Certbot mostrará un TXT record que debes agregar en tu DNS</span>
+<span class="cm"># Una vez verificado, los certs quedan en:</span>
+<span class="cm"># /etc/letsencrypt/live/tudominio.com/fullchain.pem</span>
+<span class="cm"># /etc/letsencrypt/live/tudominio.com/privkey.pem</span></code></pre>
+          <div class="info blue">
+            <span class="ico">ℹ️</span>
+            <span>El certificado <strong>wildcard</strong> (<code style="font-size:12px">*.tudominio.com</code>) cubre automáticamente todos los
+            subdominios: <code style="font-size:12px">mfe-tx.tudominio.com</code>, <code style="font-size:12px">mfe-users.tudominio.com</code>, etc.
+            Un solo certificado para toda la arquitectura.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-label">Construir y levantar todos los contenedores</div>
+          <pre><code><span class="cm"># Construir las imágenes (puede tardar 5-10 minutos la primera vez)</span>
+docker compose build
+
+<span class="cm"># Levantar en segundo plano (-d = detached)</span>
+docker compose up -d
+
+<span class="cm"># Ver el estado de los contenedores</span>
+docker compose ps</code></pre>
+          <p>Deberías ver algo como:</p>
+          <pre><code>NAME                  STATUS          PORTS
+dashboard-host-1      Up 2 minutes    0.0.0.0:3000->3000/tcp
+dashboard-mfe-tx-1    Up 2 minutes    0.0.0.0:3001->3001/tcp
+dashboard-mfe-users-1 Up 2 minutes    0.0.0.0:3002->3002/tcp
+dashboard-nginx-1     Up 2 minutes    0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-label">Verificar los logs si algo falla</div>
+          <pre><code><span class="cm"># Ver logs de todos los servicios</span>
+docker compose logs -f
+
+<span class="cm"># Ver logs de un servicio específico</span>
+docker compose logs -f host
+docker compose logs -f mfe-transactions
+docker compose logs -f nginx</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ PASO 8 — DNS -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-yellow">8</div>
+    <div>
+      <div class="card-title">Configurar el DNS</div>
+      <div class="card-subtitle">Apuntar el dominio y los subdominios a la IP del servidor EC2</div>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="explain">
+      El DNS (Domain Name System) traduce un nombre como <code style="font-size:12px">tudominio.com</code>
+      a la IP del servidor (<code style="font-size:12px">54.123.45.67</code>). Necesitas crear registros
+      de tipo <strong>A</strong> (Address) en el proveedor donde compraste el dominio.
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-label">Agregar los registros DNS</div>
+          <div class="step-desc">
+            En tu proveedor de dominio (GoDaddy, Namecheap, Cloudflare, Route 53, etc.)
+            busca la sección "DNS Management" o "Zone Editor" y agrega:
+          </div>
+          <table>
+            <thead><tr><th>Tipo</th><th>Nombre (Host)</th><th>Valor (Points to)</th><th>TTL</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code class="tag">A</code></td>
+                <td><code class="tag-orange">@</code> (raíz)</td>
+                <td><code class="tag-green">54.123.45.67</code> (tu Elastic IP)</td>
+                <td>300</td>
+              </tr>
+              <tr>
+                <td><code class="tag">A</code></td>
+                <td><code class="tag-orange">mfe-tx</code></td>
+                <td><code class="tag-green">54.123.45.67</code></td>
+                <td>300</td>
+              </tr>
+              <tr>
+                <td><code class="tag">A</code></td>
+                <td><code class="tag-orange">mfe-users</code></td>
+                <td><code class="tag-green">54.123.45.67</code></td>
+                <td>300</td>
+              </tr>
+              <tr>
+                <td><code class="tag">A</code></td>
+                <td><code class="tag-orange">www</code></td>
+                <td><code class="tag-green">54.123.45.67</code></td>
+                <td>300</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="info blue">
+            <span class="ico">ℹ️</span>
+            <span>Los cambios de DNS pueden tardar entre 5 minutos y 48 horas en propagarse
+            globalmente. Puedes verificar la propagación en <strong>dnschecker.org</strong>.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-label">Si usas AWS Route 53 como proveedor de DNS</div>
+          <pre><code><span class="cm"># En AWS Console → Route 53 → Hosted Zones → tu dominio</span>
+<span class="cm"># Create Record:</span>
+
+Record name:  (vacío = raíz del dominio)
+Record type:  A
+Value:        <span class="hl">54.123.45.67</span>
+TTL:          300
+
+<span class="cm"># Repetir para mfe-tx, mfe-users, www</span></code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-label">Verificar que el dominio resuelve correctamente</div>
+          <pre><code><span class="cm"># Desde tu terminal local (no el servidor)</span>
+nslookup tudominio.com          <span class="cm"># debe mostrar 54.123.45.67</span>
+nslookup mfe-tx.tudominio.com   <span class="cm"># debe mostrar 54.123.45.67</span>
+
+<span class="cm"># Una vez propagado, verificar HTTPS</span>
+curl -I https://tudominio.com   <span class="cm"># debe responder 200 OK</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ PASO 9 — ACTUALIZAR DESPLIEGUE -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-green">9</div>
+    <div>
+      <div class="card-title">Actualizar el despliegue cuando hay cambios</div>
+      <div class="card-subtitle">El flujo para llevar nuevas versiones a producción</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <pre><code><span class="cm"># En el servidor EC2 (conectado por SSH)</span>
+cd /home/ubuntu/dashboard-nextjs
+
+<span class="cm"># Traer los cambios del repositorio</span>
+git pull origin main
+
+<span class="cm"># Reconstruir solo el servicio que cambió (más rápido)</span>
+docker compose build host          <span class="cm"># si cambió el host</span>
+docker compose build mfe-transactions  <span class="cm"># si cambió el MFE</span>
+
+<span class="cm"># Reiniciar sin downtime (levanta el nuevo, baja el viejo)</span>
+docker compose up -d --no-deps host
+docker compose up -d --no-deps mfe-transactions</code></pre>
+
+    <div class="info green">
+      <span class="ico">✅</span>
+      <span><strong>Zero-downtime deploy:</strong> el flag <code style="font-size:12px">--no-deps</code> reinicia solo ese
+      servicio sin afectar los demás. Mientras el nuevo container arranca, el viejo sigue
+      atendiendo peticiones — Nginx detecta el cambio automáticamente.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ PASO 10 — ESCALABILIDAD -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-purple">10</div>
+    <div>
+      <div class="card-title">Escalabilidad — Ejecutar múltiples réplicas</div>
+      <div class="card-subtitle">Cómo manejar más tráfico sin cambiar el código</div>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="explain">
+      <strong>Escalar</strong> significa correr más copias del mismo contenedor para atender más
+      usuarios simultáneos. Docker Compose tiene soporte nativo para esto.
+      Nginx distribuye las peticiones entre todas las réplicas automáticamente.
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-label">Escalar un servicio específico</div>
+          <pre><code><span class="cm"># Correr 3 réplicas del MFE de transacciones</span>
+docker compose up -d --scale mfe-transactions=<span class="nm">3</span>
+
+<span class="cm"># Ver las 3 réplicas corriendo</span>
+docker compose ps</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-label">Actualizar Nginx para balancear carga entre réplicas</div>
+          <div class="step-desc">Cuando hay múltiples réplicas, Nginx necesita saber cómo distribuir:</div>
+          <pre><code><span class="cm"># Agregar upstream en nginx.conf para balancear carga</span>
+http {
+  <span class="hl">upstream mfe_transactions {
+    server mfe-transactions:<span class="nm">3001</span>;  <span class="cm">← Docker resuelve automáticamente</span>
+    <span class="cm">  entre todas las réplicas del servicio</span>
+  }</span>
+
+  server {
+    listen <span class="nm">443</span> ssl;
+    server_name mfe-tx.tudominio.com;
+
+    location / {
+      <span class="hl">proxy_pass http://mfe_transactions;</span>
+      <span class="cm"># ...resto de config igual</span>
+    }
+  }
+}</code></pre>
+          <div class="info purple">
+            <span class="ico">💡</span>
+            <span>Docker tiene un DNS interno que resuelve el nombre del servicio
+            (<code style="font-size:12px">mfe-transactions</code>) a todas sus réplicas automáticamente.
+            Nginx hace round-robin entre ellas sin configuración adicional.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-label">Para escala mayor: Docker Swarm o Amazon ECS</div>
+          <div class="step-desc">Si el tráfico creció mucho y una sola instancia EC2 no es suficiente:</div>
+          <table>
+            <thead><tr><th>Opción</th><th>Cuándo usarla</th><th>Complejidad</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code class="tag">Docker Compose scale</code></td>
+                <td>1 servidor, más réplicas</td>
+                <td>⭐ Baja — ya lo tienes</td>
+              </tr>
+              <tr>
+                <td><code class="tag">Docker Swarm</code></td>
+                <td>2-5 servidores EC2</td>
+                <td>⭐⭐ Media — sin cambiar Dockerfiles</td>
+              </tr>
+              <tr>
+                <td><code class="tag">Amazon ECS</code></td>
+                <td>Alta disponibilidad, auto-scaling</td>
+                <td>⭐⭐⭐ Alta — servicio gestionado AWS</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ MONITOREO -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-slate">🔍</div>
+    <div>
+      <div class="card-title">Comandos útiles de operación</div>
+      <div class="card-subtitle">Para el día a día en producción</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <pre><code><span class="cm"># ── Ver el estado de todos los contenedores ───────────────</span>
+docker compose ps
+
+<span class="cm"># ── Ver logs en tiempo real ────────────────────────────────</span>
+docker compose logs -f              <span class="cm"># todos</span>
+docker compose logs -f host         <span class="cm"># solo el host</span>
+docker compose logs -f nginx        <span class="cm"># solo nginx (errores de routing)</span>
+
+<span class="cm"># ── Ver uso de CPU y memoria ───────────────────────────────</span>
+docker stats
+
+<span class="cm"># ── Reiniciar un servicio sin bajar los demás ──────────────</span>
+docker compose restart host
+
+<span class="cm"># ── Bajar todo y volver a levantar ────────────────────────</span>
+docker compose down
+docker compose up -d
+
+<span class="cm"># ── Limpiar imágenes viejas (liberar espacio) ─────────────</span>
+docker system prune -af
+
+<span class="cm"># ── Renovar certificado SSL (ejecutar cada 90 días) ───────</span>
+sudo certbot renew
+docker compose restart nginx
+
+<span class="cm"># ── Automatizar renovación con cron ───────────────────────</span>
+<span class="cm"># sudo crontab -e → agregar esta línea:</span>
+0 3 * * 1 certbot renew --quiet && docker compose -f /home/ubuntu/dashboard-nextjs/docker-compose.yml restart nginx</code></pre>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ CHECKLIST FINAL -->
+<div class="card">
+  <div class="card-head">
+    <div class="badge b-green">✓</div>
+    <div>
+      <div class="card-title">Checklist de despliegue</div>
+      <div class="card-subtitle">Verifica cada punto antes de declarar producción lista</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <ul class="checks">
+      <li><div class="chk">✓</div><span>Los iframes del host leen URLs desde variables de entorno (<code class="tag">NEXT_PUBLIC_*_MFE_URL</code>)</span></li>
+      <li><div class="chk">✓</div><span><code class="tag">output: "standalone"</code> agregado al <code class="tag">next.config.ts</code> del host y cada MFE</span></li>
+      <li><div class="chk">✓</div><span>Dockerfile creado para el host y para cada MFE</span></li>
+      <li><div class="chk">✓</div><span><code class="tag">.dockerignore</code> creado en cada carpeta</span></li>
+      <li><div class="chk">✓</div><span><code class="tag">docker-compose.yml</code> con los 4 servicios: host, MFEs, nginx</span></li>
+      <li><div class="chk">✓</div><span>Nginx configurado con subdominios y header <code class="tag">frame-ancestors</code> en los MFEs</span></li>
+      <li><div class="chk">✓</div><span>EC2 creada con Ubuntu 22.04, t3.medium, 30 GB, Elastic IP asignada</span></li>
+      <li><div class="chk">✓</div><span>Security Group abre solo puertos 22, 80 y 443 (NO 3000/3001/3002)</span></li>
+      <li><div class="chk">✓</div><span>Docker instalado y habilitado en el arranque del servidor</span></li>
+      <li><div class="chk">✓</div><span>Certificado SSL wildcard obtenido con Certbot (<code class="tag">*.tudominio.com</code>)</span></li>
+      <li><div class="chk">✓</div><span>Registros DNS tipo A creados para el dominio raíz y todos los subdominios de MFEs</span></li>
+      <li><div class="chk">✓</div><span>Archivo <code class="tag">.env</code> creado en el servidor con las variables de producción</span></li>
+      <li><div class="chk">✓</div><span><code class="tag">docker compose up -d</code> ejecutado y todos los containers en estado <code class="tag-green">Up</code></span></li>
+      <li><div class="chk">✓</div><span><code class="tag">https://tudominio.com</code> carga el dashboard y los MFEs se renderizan correctamente en sus iframes</span></li>
+      <li><div class="chk">✓</div><span>Renovación automática del certificado SSL configurada en cron</span></li>
+    </ul>
+  </div>
+</div>
+
+</div><!-- /page -->
+</body>
+</html>
