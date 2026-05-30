@@ -36,6 +36,22 @@ const IconPayments = () => (
   </svg>
 );
 
+const IconProducts = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 7H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2z" />
+    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+    <line x1="12" y1="12" x2="12" y2="16" />
+    <line x1="10" y1="14" x2="14" y2="14" />
+  </svg>
+);
+
+const IconAlerts = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+  </svg>
+);
+
 const IconLogout = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -65,6 +81,8 @@ const NAV_MANAGEMENT: NavItem[] = [
   { href: "/dashboard/users",        label: "Usuarios",       icon: <IconUsers /> },
   { href: "/dashboard/transactions", label: "Transacciones",  icon: <IconTransactions />, mfe: true },
   { href: "/dashboard/payments",     label: "Pagos",          icon: <IconPayments /> },
+  { href: "/dashboard/products",     label: "Productos",      icon: <IconProducts />,     mfe: true },
+  { href: "/dashboard/alerts",       label: "Alertas",        icon: <IconAlerts />,        mfe: true },
 ];
 
 // ── NavGroup ────────────────────────────────────────────────────────
