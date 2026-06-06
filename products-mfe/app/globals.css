@@ -1,12 +1,11 @@
-/* Tailwind v4 syntax — sustituye a las directivas v3
-   `@tailwind base; @tailwind components; @tailwind utilities;`
-   que la CLI v4 ignora silenciosamente. */
-@import "tailwindcss";
-
-/* Indica qué archivos escanear para generar utilities.
-   Es necesario cuando el CSS se compila aparte (fuera del build de Next)
-   con `tailwindcss -i app/globals.css -o dist/styles.css`. */
-@source "./**/*.{ts,tsx}";
+/* Tailwind v3 — directivas estándar.
+   El paquete tiene `tailwindcss@^3.4.1` instalado localmente, así que
+   estas directivas son las correctas. NO usar `@import "tailwindcss";`
+   (eso es sintaxis v4 y rompería el build con: "`@layer base` is used
+   but no matching `@tailwind base` directive is present"). */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #F9FAFB;

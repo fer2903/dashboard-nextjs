@@ -1,37 +1,33 @@
 import { defineConfig } from "tsup";
+import { readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 
 /**
  * Empaquetado del MFE como librería npm.
  *
- * NOTA — Generación de .d.ts:
- *   tsup tiene su propio generador de tipos basado en rollup-plugin-dts.
- *   Falla cuando el código fuente usa:
- *     · `jsx: "preserve"` en tsconfig
- *     · path aliases (`@/...`)
- *     · imports profundos de paquetes con tipos complejos (ej. swr)
+ * Notas:
  *
- *   Por eso DESACTIVAMOS dts aquí (`dts: false`) y delegamos la
- *   emisión de tipos a `tsc -p tsconfig.build.json` en el script
- *   `build:lib` del package.json.
+ * 1. Generación de .d.ts → desactivada aquí (`dts: false`).
+ *    La emite `tsc -p tsconfig.build.json` en el script `build:lib`
+ *    del package.json. Esto evita que el dts-builder de tsup falle
+ *    por `jsx: "preserve"`, alias `@/*` o tipos profundos de `swr`.
+ *
+ * 2. Directiva `"use client"` → NO se puede inyectar con `banner` porque
+ *    esbuild detecta "module level directives" en el bundle resultante
+ *    y las strippea defensivamente (warning: "use client" was ignored).
+ *    Solución: prepender la directiva por post-build en `onSuccess`.
+ *    Sin esto Next.js compila el bundle como Server Component y `swr`
+ *    se resuelve contra su entry `react-server.mjs` → error.
  */
 export default defineConfig({
   entry: ["lib/index.ts"],
   format: ["esm", "cjs"],
-  dts: false, // ← lo emite tsc
+  dts: false,
   sourcemap: true,
   clean: true,
   splitting: false,
   treeshake: true,
   target: "es2020",
-
-  // ⚠️ CRÍTICO: el banner se aplica a nivel tsup (no en esbuildOptions)
-  // para que se inyecte ANTES de cualquier import en ambos formatos
-  // (ESM y CJS). Si no, Next.js compila el bundle como Server Component
-  // y SWR se resuelve contra su entry `react-server.mjs` que no tiene
-  // default export → "Export default doesn't exist in target module".
-  banner: {
-    js: '"use client";',
-  },
 
   // El host provee estas libs en runtime
   external: [
@@ -43,7 +39,31 @@ export default defineConfig({
     "next/navigation",
     "swr",
   ],
+
   esbuildOptions(options) {
     options.jsx = "automatic";
+  },
+
+  // Post-build: prepende `"use client";` como primera línea de cada
+  // archivo de salida. Es la forma confiable de marcar el bundle como
+  // Client Component cuando lo consume un host Next.js.
+  async onSuccess() {
+    const directive = '"use client";\n';
+    const files = ["dist/index.js", "dist/index.cjs"];
+
+    for (const relPath of files) {
+      const filePath = resolve(process.cwd(), relPath);
+      try {
+        const content = await readFile(filePath, "utf8");
+        if (!content.startsWith('"use client"')) {
+          await writeFile(filePath, directive + content, "utf8");
+          // eslint-disable-next-line no-console
+          console.log(`[tsup] Inyectada "use client" en ${relPath}`);
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(`[tsup] No se pudo prepend "use client" a ${relPath}:`, err);
+      }
+    }
   },
 });
