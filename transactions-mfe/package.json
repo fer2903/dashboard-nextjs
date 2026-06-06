@@ -1,25 +1,67 @@
 {
   "name": "transactions-mfe",
   "version": "1.0.0",
-  "description": "Microfrontend — Módulo de Transacciones (Multi-zone Next.js)",
-  "private": true,
+  "description": "Microfrontend de Transacciones — publicable como paquete npm y ejecutable como app Next.js standalone",
+  "license": "MIT",
+  "author": "",
+  "keywords": [
+    "microfrontend",
+    "mfe",
+    "nextjs",
+    "react",
+    "transactions",
+    "crypto"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:lib": "tsup && npm run build:css",
+    "build:css": "tailwindcss -i ./app/globals.css -o ./dist/styles.css --minify",
+    "prepublishOnly": "npm run build:lib",
+    "pack:dry": "npm pack --dry-run"
   },
-  "dependencies": {
-    "next": "^16.2.4",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+  "peerDependencies": {
+    "next": ">=15.0.0",
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
   },
+  "dependencies": {},
   "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "next": "^16.2.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "tailwindcss": "^4",
+    "tsup": "^8.3.5",
     "typescript": "^5"
   }
 }

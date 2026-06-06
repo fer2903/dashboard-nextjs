@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "declarationDir": "dist",
+    "outDir": "dist",
+    "rootDir": ".",
+    "emitDeclarationOnly": true
+  },
+  "include": [
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "app/**/*.ts",
+    "app/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".next"
+  ]
+}

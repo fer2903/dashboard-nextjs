@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Instructivo — Publicar un MFE como paquete npm</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  :root {
+    --bg: #F4F6F8;
+    --surface: #ffffff;
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --text: #212B36;
+    --text-secondary: #637381;
+    --border: rgba(145,158,171,0.32);
+    --code-bg: #1C2536;
+    --code-text: #E5E7EB;
+    --code-comment: #94A3B8;
+    --code-keyword: #818CF8;
+    --code-string: #34D399;
+    --warning-bg: rgba(245,158,11,0.10);
+    --warning-border: rgba(245,158,11,0.30);
+    --info-bg: rgba(79,70,229,0.08);
+    --info-border: rgba(79,70,229,0.24);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    padding: 40px 20px;
+  }
+  .container { max-width: 920px; margin: 0 auto; }
+  header {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    padding: 36px 32px;
+    border-radius: 16px;
+    margin-bottom: 28px;
+    box-shadow: 0 12px 24px -4px rgba(79,70,229,0.28);
+  }
+  header h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: -0.02em; }
+  header p { margin: 0; opacity: 0.92; font-size: 15px; }
+  section {
+    background: var(--surface);
+    padding: 28px 32px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 2px 0 rgba(145,158,171,0.20), 0 12px 24px -4px rgba(145,158,171,0.12);
+  }
+  h2 {
+    margin: 0 0 16px;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2 .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg,#6366f1,#4f46e5);
+    color: white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  h3 { margin: 22px 0 10px; font-size: 15px; color: var(--text); }
+  p { margin: 0 0 12px; color: var(--text-secondary); font-size: 14.5px; }
+  ul, ol { margin: 8px 0 14px; padding-left: 22px; color: var(--text-secondary); font-size: 14.5px; }
+  li { margin-bottom: 6px; }
+  code {
+    background: rgba(145,158,171,0.16);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+    font-size: 13px;
+    color: var(--text);
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 16px 18px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    margin: 10px 0 16px;
+  }
+  pre code { background: transparent; padding: 0; color: inherit; }
+  .kw { color: var(--code-keyword); }
+  .str { color: var(--code-string); }
+  .cm { color: var(--code-comment); font-style: italic; }
+  .file {
+    display: inline-block;
+    background: rgba(79,70,229,0.10);
+    color: var(--primary);
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .callout {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .callout.info {
+    background: var(--info-bg);
+    border-left: 3px solid var(--primary);
+    color: var(--text);
+  }
+  .callout.warn {
+    background: var(--warning-bg);
+    border-left: 3px solid #F59E0B;
+    color: var(--text);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(145,158,171,0.16);
+  }
+  th { background: #F4F6F8; font-weight: 600; color: var(--text); }
+  td code { font-size: 12.5px; }
+  .toc {
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    padding: 18px 22px;
+    border-radius: 10px;
+    margin-bottom: 24px;
+  }
+  .toc ol { margin: 6px 0 0; padding-left: 22px; }
+  .toc a { color: var(--primary); text-decoration: none; font-size: 14px; }
+  .toc a:hover { text-decoration: underline; }
+  .pill {
+    display: inline-block;
+    background: rgba(34,197,94,0.10);
+    color: #16A34A;
+    border: 1px solid rgba(34,197,94,0.24);
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-left: 8px;
+  }
+  .pill.alert { background: rgba(239,68,68,0.10); color: #DC2626; border-color: rgba(239,68,68,0.24); }
+  .pill.product { background: rgba(2,132,199,0.10); color: #0369A1; border-color: rgba(2,132,199,0.24); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Publicar un microfrontend como paquete npm</h1>
+  <p>Instructivo para replicar en <strong>products-mfe</strong> y <strong>alerts-mfe</strong> lo que ya se hizo en <strong>transactions-mfe</strong>.</p>
+</header>
+
+<section class="toc">
+  <strong>Contenido</strong>
+  <ol>
+    <li><a href="#concepto">Concepto: paquete dual (app + librería)</a></li>
+    <li><a href="#archivos">Archivos a crear / modificar</a></li>
+    <li><a href="#paso1">Paso 1 — Reescribir <code>package.json</code></a></li>
+    <li><a href="#paso2">Paso 2 — Crear <code>lib/index.ts</code></a></li>
+    <li><a href="#paso3">Paso 3 — Crear <code>tsup.config.ts</code></a></li>
+    <li><a href="#paso4">Paso 4 — Crear <code>tsconfig.build.json</code></a></li>
+    <li><a href="#paso5">Paso 5 — Crear <code>.npmignore</code></a></li>
+    <li><a href="#paso6">Paso 6 — README y LICENSE</a></li>
+    <li><a href="#paso7">Paso 7 — Build y publicación</a></li>
+    <li><a href="#consumo">Consumirlo desde el host</a></li>
+    <li><a href="#diferencias">Diferencias para products-mfe y alerts-mfe</a></li>
+  </ol>
+</section>
+
+<section id="concepto">
+  <h2><span class="num">·</span>Concepto: paquete dual</h2>
+  <p>El MFE se convierte en un <strong>paquete dual</strong>:</p>
+  <ul>
+    <li><strong>App Next.js standalone</strong> en su puerto (3001 / 3003 / 3004) para desarrollo aislado. <code>npm run dev</code> sigue funcionando igual.</li>
+    <li><strong>Librería npm</strong> que exporta las páginas/componentes como React, para que el host las importe directo (sin iframe, sin multi-zone).</li>
+  </ul>
+  <p>Las páginas viven en <code>app/</code> como ya lo hacen. Un <code>lib/index.ts</code> las re-exporta. <strong>tsup</strong> compila ese entry point a <code>dist/</code> con ESM + CJS + tipos. Tailwind se compila aparte a <code>dist/styles.css</code>.</p>
+  <div class="callout info">
+    <strong>Clave:</strong> <code>next</code>, <code>react</code> y <code>react-dom</code> se mueven a <code>peerDependencies</code>. El host los provee; el paquete no los duplica.
+  </div>
+</section>
+
+<section id="archivos">
+  <h2><span class="num">·</span>Archivos a crear / modificar</h2>
+  <table>
+    <thead><tr><th>Archivo</th><th>Acción</th><th>Propósito</th></tr></thead>
+    <tbody>
+      <tr><td><span class="file">package.json</span></td><td>Reescribir</td><td>exports, peerDeps, scripts de build</td></tr>
+      <tr><td><span class="file">lib/index.ts</span></td><td>Crear</td><td>Entry point de la librería</td></tr>
+      <tr><td><span class="file">tsup.config.ts</span></td><td>Crear</td><td>Bundler de TS/TSX a ESM+CJS+d.ts</td></tr>
+      <tr><td><span class="file">tsconfig.build.json</span></td><td>Crear</td><td>tsconfig solo para emitir tipos</td></tr>
+      <tr><td><span class="file">.npmignore</span></td><td>Crear</td><td>Excluir código fuente del tarball</td></tr>
+      <tr><td><span class="file">README.md</span></td><td>Crear/actualizar</td><td>Docs de instalación y uso</td></tr>
+      <tr><td><span class="file">LICENSE</span></td><td>Crear</td><td>Licencia (MIT recomendado)</td></tr>
+    </tbody>
+  </table>
+  <p>El directorio <code>app/</code>, <code>next.config.ts</code>, <code>postcss.config.mjs</code> y demás <strong>no se tocan</strong> — siguen sirviendo el modo standalone.</p>
+</section>
+
+<section id="paso1">
+  <h2><span class="num">1</span>Reescribir <code>package.json</code></h2>
+  <p>Reemplaza el <code>package.json</code> completo del MFE. Ajusta <code>name</code>, <code>description</code> y puerto según el MFE.</p>
+  <pre><code>{
+  <span class="str">"name"</span>: <span class="str">"transactions-mfe"</span>,
+  <span class="str">"version"</span>: <span class="str">"1.0.0"</span>,
+  <span class="str">"description"</span>: <span class="str">"MFE de Transacciones — npm + standalone"</span>,
+  <span class="str">"license"</span>: <span class="str">"MIT"</span>,
+  <span class="str">"type"</span>: <span class="str">"module"</span>,
+
+  <span class="cm">// Entry points</span>
+  <span class="str">"main"</span>:    <span class="str">"./dist/index.cjs"</span>,
+  <span class="str">"module"</span>:  <span class="str">"./dist/index.js"</span>,
+  <span class="str">"types"</span>:   <span class="str">"./dist/index.d.ts"</span>,
+  <span class="str">"exports"</span>: {
+    <span class="str">"."</span>: {
+      <span class="str">"types"</span>:   <span class="str">"./dist/index.d.ts"</span>,
+      <span class="str">"import"</span>:  <span class="str">"./dist/index.js"</span>,
+      <span class="str">"require"</span>: <span class="str">"./dist/index.cjs"</span>
+    },
+    <span class="str">"./styles.css"</span>: <span class="str">"./dist/styles.css"</span>
+  },
+
+  <span class="cm">// Solo se publica /dist + README + LICENSE</span>
+  <span class="str">"files"</span>: [<span class="str">"dist"</span>, <span class="str">"README.md"</span>, <span class="str">"LICENSE"</span>],
+  <span class="str">"sideEffects"</span>: [<span class="str">"**/*.css"</span>],
+  <span class="str">"publishConfig"</span>: { <span class="str">"access"</span>: <span class="str">"public"</span> },
+
+  <span class="str">"scripts"</span>: {
+    <span class="str">"dev"</span>:            <span class="str">"next dev -p 3001"</span>,
+    <span class="str">"build"</span>:          <span class="str">"next build"</span>,
+    <span class="str">"start"</span>:          <span class="str">"next start -p 3001"</span>,
+    <span class="str">"build:lib"</span>:      <span class="str">"tsup && npm run build:css"</span>,
+    <span class="str">"build:css"</span>:      <span class="str">"tailwindcss -i ./app/globals.css -o ./dist/styles.css --minify"</span>,
+    <span class="str">"prepublishOnly"</span>: <span class="str">"npm run build:lib"</span>,
+    <span class="str">"pack:dry"</span>:       <span class="str">"npm pack --dry-run"</span>
+  },
+
+  <span class="cm">// Lo provee el host</span>
+  <span class="str">"peerDependencies"</span>: {
+    <span class="str">"next"</span>:      <span class="str">"&gt;=15.0.0"</span>,
+    <span class="str">"react"</span>:     <span class="str">"&gt;=19.0.0"</span>,
+    <span class="str">"react-dom"</span>: <span class="str">"&gt;=19.0.0"</span>
+  },
+
+  <span class="cm">// Solo para desarrollo y build local</span>
+  <span class="str">"devDependencies"</span>: {
+    <span class="str">"next"</span>: <span class="str">"^16.2.4"</span>,
+    <span class="str">"react"</span>: <span class="str">"19.2.4"</span>,
+    <span class="str">"react-dom"</span>: <span class="str">"19.2.4"</span>,
+    <span class="str">"tsup"</span>: <span class="str">"^8.3.5"</span>,
+    <span class="str">"@tailwindcss/cli"</span>: <span class="str">"^4.0.0"</span>,
+    <span class="str">"@tailwindcss/postcss"</span>: <span class="str">"^4"</span>,
+    <span class="str">"tailwindcss"</span>: <span class="str">"^4"</span>,
+    <span class="str">"typescript"</span>: <span class="str">"^5"</span>,
+    <span class="str">"@types/node"</span>: <span class="str">"^20"</span>,
+    <span class="str">"@types/react"</span>: <span class="str">"^19"</span>,
+    <span class="str">"@types/react-dom"</span>: <span class="str">"^19"</span>
+  }
+}</code></pre>
+  <div class="callout warn">
+    Quitar <code>"private": true</code> es obligatorio. Mientras esté presente, <code>npm publish</code> rechaza el paquete.
+  </div>
+</section>
+
+<section id="paso2">
+  <h2><span class="num">2</span>Crear <code>lib/index.ts</code></h2>
+  <p>Este archivo re-exporta las páginas del App Router como componentes React. Es lo único que entra al bundle de la librería.</p>
+  <pre><code><span class="cm">// lib/index.ts</span>
+<span class="kw">export</span> { <span class="kw">default</span> <span class="kw">as</span> TransactionsListPage } <span class="kw">from</span> <span class="str">"../app/page"</span>;
+<span class="kw">export</span> { <span class="kw">default</span> <span class="kw">as</span> NewTransactionPage }   <span class="kw">from</span> <span class="str">"../app/new/page"</span>;
+<span class="kw">export</span> { <span class="kw">default</span> <span class="kw">as</span> EditTransactionPage }  <span class="kw">from</span> <span class="str">"../app/edit/[id]/page"</span>;
+<span class="kw">export</span> { <span class="kw">default</span> <span class="kw">as</span> Sidebar }              <span class="kw">from</span> <span class="str">"../app/components/Sidebar"</span>;
+<span class="kw">export</span> { <span class="kw">default</span> <span class="kw">as</span> EmbeddedShell }        <span class="kw">from</span> <span class="str">"../app/components/EmbeddedShell"</span>;</code></pre>
+</section>
+
+<section id="paso3">
+  <h2><span class="num">3</span>Crear <code>tsup.config.ts</code></h2>
+  <pre><code><span class="kw">import</span> { defineConfig } <span class="kw">from</span> <span class="str">"tsup"</span>;
+
+<span class="kw">export</span> <span class="kw">default</span> defineConfig({
+  entry: [<span class="str">"lib/index.ts"</span>],
+  format: [<span class="str">"esm"</span>, <span class="str">"cjs"</span>],
+  dts: <span class="kw">true</span>,
+  sourcemap: <span class="kw">true</span>,
+  clean: <span class="kw">true</span>,
+  splitting: <span class="kw">false</span>,
+  treeshake: <span class="kw">true</span>,
+  target: <span class="str">"es2020"</span>,
+  <span class="cm">// El host provee estas libs en runtime</span>
+  external: [
+    <span class="str">"react"</span>,
+    <span class="str">"react-dom"</span>,
+    <span class="str">"react/jsx-runtime"</span>,
+    <span class="str">"next"</span>,
+    <span class="str">"next/link"</span>,
+    <span class="str">"next/navigation"</span>,
+  ],
+  esbuildOptions(options) {
+    <span class="cm">// Preserva "use client" para que Next del host lo reconozca</span>
+    options.banner = { js: <span class="str">'"use client";'</span> };
+    options.jsx = <span class="str">"automatic"</span>;
+  },
+});</code></pre>
+</section>
+
+<section id="paso4">
+  <h2><span class="num">4</span>Crear <code>tsconfig.build.json</code></h2>
+  <p>Necesario para emitir los <code>.d.ts</code> (el <code>tsconfig.json</code> principal tiene <code>noEmit: true</code>).</p>
+  <pre><code>{
+  <span class="str">"extends"</span>: <span class="str">"./tsconfig.json"</span>,
+  <span class="str">"compilerOptions"</span>: {
+    <span class="str">"noEmit"</span>: <span class="kw">false</span>,
+    <span class="str">"declaration"</span>: <span class="kw">true</span>,
+    <span class="str">"declarationDir"</span>: <span class="str">"dist"</span>,
+    <span class="str">"outDir"</span>: <span class="str">"dist"</span>,
+    <span class="str">"emitDeclarationOnly"</span>: <span class="kw">true</span>
+  },
+  <span class="str">"include"</span>: [<span class="str">"lib/**/*"</span>, <span class="str">"app/**/*"</span>],
+  <span class="str">"exclude"</span>: [<span class="str">"node_modules"</span>, <span class="str">"dist"</span>, <span class="str">".next"</span>]
+}</code></pre>
+</section>
+
+<section id="paso5">
+  <h2><span class="num">5</span>Crear <code>.npmignore</code></h2>
+  <p>Solo <code>dist/</code>, <code>README.md</code> y <code>LICENSE</code> deben entrar al tarball.</p>
+  <pre><code><span class="cm"># Código fuente</span>
+app/
+lib/
+public/
+
+<span class="cm"># Configs de Next y dev</span>
+next.config.ts
+next-env.d.ts
+postcss.config.mjs
+tailwind.config.ts
+tsconfig.json
+tsconfig.build.json
+tsup.config.ts
+eslint.config.mjs
+
+<span class="cm"># Artefactos</span>
+.next/
+node_modules/
+.env*
+.git
+.DS_Store
+*.log</code></pre>
+</section>
+
+<section id="paso6">
+  <h2><span class="num">6</span>README y LICENSE</h2>
+  <p>El README debe documentar:</p>
+  <ul>
+    <li>Cómo instalarlo (<code>npm install &lt;nombre&gt;</code>)</li>
+    <li>Qué componentes exporta (tabla)</li>
+    <li>Qué variables de entorno necesita el host (<code>NEXT_PUBLIC_API_URL</code>)</li>
+    <li>Cómo levantarlo standalone (<code>npm run dev</code>)</li>
+    <li>Cómo empaquetar (<code>npm run build:lib</code>) y publicar (<code>npm publish</code>)</li>
+  </ul>
+  <p>Para LICENSE usa MIT estándar (cualquier generador sirve).</p>
+</section>
+
+<section id="paso7">
+  <h2><span class="num">7</span>Build y publicación</h2>
+  <pre><code><span class="cm"># 1. Instalar nuevas dependencias</span>
+npm install
+
+<span class="cm"># 2. Compilar la librería (genera /dist)</span>
+npm run build:lib
+
+<span class="cm"># 3. Verificar qué se va a publicar (no sube nada)</span>
+npm run pack:dry
+
+<span class="cm"># 4. Publicar al registry configurado</span>
+npm publish
+<span class="cm">#   prepublishOnly correrá build:lib automáticamente</span></code></pre>
+  <div class="callout info">
+    <strong>Salida esperada de <code>pack:dry</code>:</strong> debe listar solo <code>dist/index.js</code>, <code>dist/index.cjs</code>, <code>dist/index.d.ts</code>, <code>dist/styles.css</code>, <code>package.json</code>, <code>README.md</code> y <code>LICENSE</code>. Si aparece <code>app/</code> o <code>.next/</code>, el <code>.npmignore</code> no está correcto.
+  </div>
+</section>
+
+<section id="consumo">
+  <h2><span class="num">·</span>Consumirlo desde el host</h2>
+  <p>Una vez publicado:</p>
+  <pre><code><span class="cm"># En dashboard-nextjs</span>
+npm install transactions-mfe</code></pre>
+  <pre><code><span class="cm">// app/dashboard/transactions/page.tsx</span>
+<span class="kw">import</span> { TransactionsListPage } <span class="kw">from</span> <span class="str">"transactions-mfe"</span>;
+<span class="kw">import</span> <span class="str">"transactions-mfe/styles.css"</span>;
+
+<span class="kw">export default function</span> Page() {
+  <span class="kw">return</span> &lt;TransactionsListPage /&gt;;
+}</code></pre>
+  <p>El iframe + rewrites multi-zone del host ya no son necesarios. El MFE corre dentro del proceso del host como cualquier componente React.</p>
+</section>
+
+<section id="diferencias">
+  <h2><span class="num">·</span>Diferencias para cada MFE</h2>
+
+  <h3>products-mfe <span class="pill product">puerto 3003</span></h3>
+  <ul>
+    <li><code>"name": "products-mfe"</code></li>
+    <li>Scripts <code>dev</code> / <code>start</code>: usar <code>-p 3003</code></li>
+    <li><code>lib/index.ts</code>: exportar las páginas y componentes que existan en <code>app/</code> (revisa los archivos antes de escribir el index)</li>
+    <li>Si usa Tailwind v3 (en lugar de v4 como transactions): el script <code>build:css</code> sigue siendo válido con <code>tailwindcss</code> de v3 — el binario tiene la misma interfaz <code>-i</code> / <code>-o</code></li>
+    <li>Dependencias propias (ej. <code>swr</code>): si son usadas por los componentes exportados, agregarlas como <code>dependencies</code> (no peer)</li>
+  </ul>
+
+  <h3>alerts-mfe <span class="pill alert">puerto 3004</span></h3>
+  <ul>
+    <li><code>"name": "alerts-mfe"</code></li>
+    <li>Scripts <code>dev</code> / <code>start</code>: usar <code>-p 3004</code></li>
+    <li>Mismo tratamiento que products: revisa qué hay en <code>app/</code>, exporta cada page como named export, e incluye dependencias propias como <code>dependencies</code></li>
+  </ul>
+
+  <div class="callout warn">
+    <strong>Atención con dependencias.</strong> Si un MFE usa <code>swr</code>, <code>@tanstack/react-query</code>, etc., elige una de dos opciones:
+    <br/>· Si el host también las usa con la misma versión → ponlas como <code>peerDependencies</code> para evitar duplicación.
+    <br/>· Si son específicas del MFE → <code>dependencies</code>.
+  </div>
+
+  <h3>Resumen rápido de cambios por MFE</h3>
+  <table>
+    <thead><tr><th>MFE</th><th>name</th><th>puerto</th><th>Tailwind</th></tr></thead>
+    <tbody>
+      <tr><td>transactions-mfe</td><td><code>transactions-mfe</code></td><td>3001</td><td>v4</td></tr>
+      <tr><td>products-mfe</td><td><code>products-mfe</code></td><td>3003</td><td>v3</td></tr>
+      <tr><td>alerts-mfe</td><td><code>alerts-mfe</code></td><td>3004</td><td>v3</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2><span class="num">✓</span>Checklist final por MFE</h2>
+  <ol>
+    <li>☐ <code>package.json</code> reescrito (sin <code>private</code>, con <code>exports</code>, <code>files</code>, <code>peerDependencies</code>, scripts <code>build:lib</code> + <code>prepublishOnly</code>)</li>
+    <li>☐ <code>lib/index.ts</code> con todos los exports de las páginas y componentes</li>
+    <li>☐ <code>tsup.config.ts</code> con <code>react</code>, <code>react-dom</code>, <code>next/*</code> como external y banner <code>"use client"</code></li>
+    <li>☐ <code>tsconfig.build.json</code> con <code>declaration: true</code> y <code>noEmit: false</code></li>
+    <li>☐ <code>.npmignore</code> excluyendo todo lo que no es <code>dist/</code></li>
+    <li>☐ <code>README.md</code> con uso, exports y env vars</li>
+    <li>☐ <code>LICENSE</code></li>
+    <li>☐ <code>npm install</code> sin errores</li>
+    <li>☐ <code>npm run build:lib</code> produce <code>dist/index.js</code>, <code>dist/index.cjs</code>, <code>dist/index.d.ts</code>, <code>dist/styles.css</code></li>
+    <li>☐ <code>npm run pack:dry</code> muestra solo los archivos esperados</li>
+    <li>☐ <code>npm run dev</code> sigue levantando la app standalone en su puerto</li>
+  </ol>
+</section>
+
+</div>
+</body>
+</html>
