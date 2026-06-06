@@ -103,12 +103,12 @@ const TableSkeleton = () => (
 export default function AlertsListPage() {
   const { alerts, loading, error, mutate } = useAlerts();
 
-  const handleMarkRead = async (alert: AppAlert) => {
+  const handleMarkRead = async (alertItem: AppAlert) => {
     try {
-      await markAlertRead(alert._id);
+      await markAlertRead(alertItem._id);
       mutate();
     } catch (e) {
-      alert(`Error: ${(e as Error).message}`);
+      window.alert(`Error: ${(e as Error).message}`);
     }
   };
 
@@ -118,18 +118,20 @@ export default function AlertsListPage() {
       await deleteAlert(alertItem._id);
       mutate();
     } catch (e) {
-      alert(`Error: ${(e as Error).message}`);
+      window.alert(`Error: ${(e as Error).message}`);
     }
   };
 
-  const unreadCount = alerts?.filter((a) => a.status === "unread").length ?? 0;
+  // Garantiza que alerts sea siempre un array (SWR puede devolver un objeto de error)
+  const alertsList: AppAlert[] = Array.isArray(alerts) ? alerts : [];
+  const unreadCount = alertsList.filter((a) => a.status === "unread").length;
 
   return (
     <div className="p-6 space-y-5">
 
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
-        {alerts && !loading && (
+        {!loading && alertsList.length >= 0 && (
           <div className="flex items-center gap-2">
             <div
               className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full"
@@ -145,7 +147,7 @@ export default function AlertsListPage() {
               className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-full"
               style={{ backgroundColor: "rgba(107,114,128,0.08)", color: "#6b7280" }}
             >
-              {alerts.length} total
+              {alertsList.length} total
             </div>
           </div>
         )}
@@ -187,7 +189,7 @@ export default function AlertsListPage() {
           </div>
         )}
 
-        {!loading && !error && alerts && alerts.length === 0 && (
+        {!loading && !error && alertsList.length === 0 && (
           <div className="px-6 py-16 text-center">
             <div
               className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-4"
@@ -205,10 +207,10 @@ export default function AlertsListPage() {
           </div>
         )}
 
-        {!loading && !error && alerts && alerts.length > 0 && (
+        {!loading && !error && alertsList.length > 0 && (
           <div>
-            {alerts.map((alert, idx) => {
-              const isLast = idx === alerts.length - 1;
+            {alertsList.map((alert, idx) => {
+              const isLast = idx === alertsList.length - 1;
               const cfg = TYPE_CONFIG[alert.type] ?? TYPE_CONFIG["info"];
               return (
                 <div
@@ -294,7 +296,7 @@ export default function AlertsListPage() {
               style={{ borderTop: "1px solid rgba(145,158,171,0.16)", backgroundColor: "#FAFAFA" }}
             >
               <p className="text-xs" style={{ color: "var(--text-disabled)" }}>
-                {unreadCount} sin leer · {alerts.length} total
+                {unreadCount} sin leer · {alertsList.length} total
               </p>
             </div>
           </div>

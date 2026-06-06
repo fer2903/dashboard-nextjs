@@ -23,3 +23,7 @@ export async function connectDB(){
     cached.conn = await cached.promise
     return cached.conn
 }
+
+// Alias como default export para compatibilidad con rutas que usan:
+// import connectMongo from "@/app/src/lib/mongodb"
+export default connectDB
