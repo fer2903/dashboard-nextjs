@@ -1,0 +1,30 @@
+# Lo único que se publica es /dist, README.md y LICENSE.
+# Excluimos todo lo que es código fuente, configuración de Next y artefactos
+# de desarrollo para mantener el tarball liviano.
+
+# Código fuente y app Next standalone
+app/
+lib/
+public/
+
+# Configuración de Next y herramientas de dev
+next.config.ts
+next-env.d.ts
+postcss.config.mjs
+tailwind.config.ts
+tsconfig.json
+tsconfig.build.json
+tsup.config.ts
+eslint.config.mjs
+
+# Artefactos de build de Next y dependencias
+.next/
+node_modules/
+coverage/
+
+# Misc
+.DS_Store
+*.log
+.env*
+.git
+.gitignore
