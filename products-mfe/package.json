@@ -1,17 +1,56 @@
 {
   "name": "products-mfe",
   "version": "0.1.0",
-  "private": true,
+  "description": "Microfrontend de Productos — publicable como paquete npm y ejecutable como app Next.js standalone",
+  "license": "MIT",
+  "author": "",
+  "keywords": [
+    "microfrontend",
+    "mfe",
+    "nextjs",
+    "react",
+    "products"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/types/lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/lib/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "next dev -p 3003",
     "build": "next build",
     "start": "next start -p 3003",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:lib": "tsup && npm run build:types && npm run build:css",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build:css": "tailwindcss -i ./app/globals.css -o ./dist/styles.css --minify",
+    "prepublishOnly": "npm run build:lib",
+    "pack:dry": "npm pack --dry-run"
+  },
+  "peerDependencies": {
+    "next": ">=15.0.0",
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
   },
   "dependencies": {
-    "next": "15.3.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
     "swr": "^2.3.3"
   },
   "devDependencies": {
@@ -20,8 +59,12 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
+    "next": "15.3.2",
     "postcss": "^8",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tailwindcss": "^3.4.1",
+    "tsup": "^8.3.5",
     "typescript": "^5"
   }
 }

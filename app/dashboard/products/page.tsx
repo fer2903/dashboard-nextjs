@@ -1,27 +1,23 @@
+"use client";
+
 /**
  * Página: /dashboard/products
  *
- * Renderiza el MFE de Productos dentro del layout del host
- * mediante un iframe. El MFE detecta que está embebido y oculta
- * su propio sidebar y topbar (ver EmbeddedShell.tsx en el MFE).
+ * Renderiza el MFE de Productos como componente React dentro del host.
  *
- * Si el MFE no está corriendo en :3003, el iframe mostrará un error
- * de conexión del navegador.
+ * IMPORTANTE — directiva "use client":
+ *   El bundle publicado de `products-mfe` no incluyó la directiva
+ *   "use client" al inicio del archivo. Sin esa marca, Next.js lo
+ *   compila en contexto RSC y resuelve `swr` contra su entry point
+ *   `react-server.mjs`, que no expone el default export de useSWR
+ *   (error: "Export default doesn't exist in target module").
+ *
+ *   Mientras no se republique el paquete con la directiva incluida,
+ *   forzamos contexto cliente aquí.
  */
-const MFE_URL = process.env.NEXT_PUBLIC_PRODUCTS_MFE_URL ?? "http://localhost:3003";
+import { ProductsListPage } from "products-mfe";
+import "products-mfe/styles.css";
 
 export default function ProductsPage() {
-  return (
-    <iframe
-      src={`${MFE_URL}/dashboard/products`}
-      title="Módulo de Productos"
-      style={{
-        width: "100%",
-        height: "calc(100vh - 64px)",
-        border: "none",
-        display: "block",
-        backgroundColor: "var(--background)",
-      }}
-    />
-  );
+  return <ProductsListPage />;
 }

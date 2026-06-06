@@ -1,0 +1,37 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist/types",
+    "declarationDir": "dist/types",
+
+    // El tsconfig del MFE usa "jsx": "preserve" (para Next).
+    // Para emitir tipos necesitamos react-jsx, si no tsc no entiende
+    // los componentes .tsx al generar declaraciones.
+    "jsx": "react-jsx",
+
+    // Resuelve los path aliases del tsconfig base (`@/*`)
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+
+    "skipLibCheck": true,
+    "incremental": false
+  },
+  "include": [
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "app/**/*.ts",
+    "app/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".next",
+    ".next/types/**/*",
+    ".next/dev/types/**/*"
+  ]
+}
