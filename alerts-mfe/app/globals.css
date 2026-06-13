@@ -1,6 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind v4 — `tailwindcss@^4` está instalado localmente.
+   Las directivas v3 (`@tailwind base/components/utilities`) son
+   ignoradas silenciosamente por la CLI v4 → no generaría preflight. */
+@import "tailwindcss";
+
+/* Indica explícitamente qué archivos escanear para utilities,
+   ya que el CSS se compila aparte del build de Next. */
+@source "./**/*.{ts,tsx}";
 
 :root {
   --background: #F9FAFB;

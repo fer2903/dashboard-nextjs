@@ -38,7 +38,7 @@ export default defineConfig({
     "next",
     "next/link",
     "next/navigation",
-    "next/font/google",
+    "swr",
   ],
 
   esbuildOptions(options) {

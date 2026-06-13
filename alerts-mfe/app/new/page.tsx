@@ -40,7 +40,7 @@ export default function NewAlertPage() {
         status: form.status,
         source: form.source || "system",
       });
-      router.push("/");
+      router.push("/dashboard/alerts");
     } catch (err) {
       setError((err as Error).message);
       setSaving(false);
@@ -79,7 +79,7 @@ export default function NewAlertPage() {
     <div className="p-6 max-w-xl mx-auto space-y-5">
       <div>
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/dashboard/alerts")}
           className="inline-flex items-center gap-1.5 text-sm font-medium mb-4"
           style={{ color: "var(--text-secondary)" }}
         >
@@ -166,7 +166,7 @@ export default function NewAlertPage() {
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/dashboard/alerts")}
               className="flex-1 py-2.5 rounded-lg text-sm font-semibold"
               style={{ border: "1px solid rgba(145,158,171,0.32)", color: "var(--text-secondary)" }}
             >

@@ -153,7 +153,7 @@ export default function AlertsListPage() {
         )}
         {!loading && <div />}
         <Link
-          href="/new"
+          href="/dashboard/alerts/new"
           className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg text-white"
           style={{ backgroundColor: "#e11d48" }}
         >
