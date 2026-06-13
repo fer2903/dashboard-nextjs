@@ -1,6 +1,6 @@
 {
   "name": "transactions-mfe",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Microfrontend de Transacciones — publicable como paquete npm y ejecutable como app Next.js standalone",
   "license": "MIT",
   "author": "",
@@ -51,7 +51,9 @@
     "react": ">=19.0.0",
     "react-dom": ">=19.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "alerts-mfe": "^0.0.1-security.1"
+  },
   "devDependencies": {
     "@tailwindcss/cli": "^4.0.0",
     "@tailwindcss/postcss": "^4",

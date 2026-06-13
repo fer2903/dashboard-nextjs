@@ -194,7 +194,7 @@ function TransactionsPage() {
       /* @__PURE__ */ jsxRuntime.jsxs(
         Link__default.default,
         {
-          href: "/new",
+          href: "/dashboard/transactions/new",
           className: "inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold text-white transition-all duration-200",
           style: {
             background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
@@ -282,7 +282,7 @@ function TransactionsPage() {
         transactions.length === 0 && /* @__PURE__ */ jsxRuntime.jsx(
           Link__default.default,
           {
-            href: "/new",
+            href: "/dashboard/transactions/new",
             className: "inline-block mt-4 px-4 py-2 rounded-lg text-sm font-semibold text-white",
             style: { background: "var(--primary)" },
             children: "Crear primera transacci\xF3n"
@@ -341,7 +341,7 @@ function TransactionsPage() {
                     /* @__PURE__ */ jsxRuntime.jsx(
                       Link__default.default,
                       {
-                        href: `/edit/${tx._id}`,
+                        href: `/dashboard/transactions/edit/${tx._id}`,
                         className: "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150",
                         style: { color: "var(--text-secondary)", border: "1px solid var(--border)" },
                         onMouseEnter: (e) => {
@@ -502,7 +502,7 @@ function NewTransactionPage() {
         throw new Error(data.message ?? `Error ${res.status}`);
       }
       setSuccess(true);
-      setTimeout(() => router.push("/"), 1200);
+      setTimeout(() => router.push("/dashboard/transactions"), 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al crear la transacci\xF3n");
     } finally {
@@ -527,7 +527,7 @@ function NewTransactionPage() {
     /* @__PURE__ */ jsxRuntime.jsxs(
       Link__default.default,
       {
-        href: "/",
+        href: "/dashboard/transactions",
         className: "inline-flex items-center gap-2 text-sm mb-6 transition-colors",
         style: { color: "var(--text-secondary)" },
         children: [
@@ -639,7 +639,7 @@ function NewTransactionPage() {
           /* @__PURE__ */ jsxRuntime.jsx(
             Link__default.default,
             {
-              href: "/",
+              href: "/dashboard/transactions",
               className: "flex-1 py-3 rounded-lg text-sm font-bold text-center transition-all duration-150",
               style: { border: "1px solid var(--border)", color: "var(--text-secondary)", backgroundColor: "white" },
               children: "Cancelar"
@@ -752,7 +752,7 @@ function EditTransactionPage() {
         throw new Error(data.message ?? `Error ${res.status}`);
       }
       setSuccess(true);
-      setTimeout(() => router.push("/"), 1200);
+      setTimeout(() => router.push("/dashboard/transactions"), 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al actualizar");
     } finally {
@@ -777,7 +777,7 @@ function EditTransactionPage() {
     /* @__PURE__ */ jsxRuntime.jsxs(
       Link__default.default,
       {
-        href: "/",
+        href: "/dashboard/transactions",
         className: "inline-flex items-center gap-2 text-sm mb-6 transition-colors",
         style: { color: "var(--text-secondary)" },
         children: [
@@ -907,7 +907,7 @@ function EditTransactionPage() {
           /* @__PURE__ */ jsxRuntime.jsx(
             Link__default.default,
             {
-              href: "/",
+              href: "/dashboard/transactions",
               className: "flex-1 py-3 rounded-lg text-sm font-bold text-center",
               style: { border: "1px solid var(--border)", color: "var(--text-secondary)", backgroundColor: "white" },
               children: "Cancelar"
@@ -961,8 +961,8 @@ var IconArrowLeft = () => /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "16", 
 ] });
 var IconLogo = () => /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M12 2v20M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6" }) });
 var NAV_ITEMS = [
-  { href: "/", label: "Lista de Transacciones", icon: /* @__PURE__ */ jsxRuntime.jsx(IconList, {}) },
-  { href: "/new", label: "Nueva Transacci\xF3n", icon: /* @__PURE__ */ jsxRuntime.jsx(IconPlus, {}) }
+  { href: "/dashboard/transactions", label: "Lista de Transacciones", icon: /* @__PURE__ */ jsxRuntime.jsx(IconList, {}) },
+  { href: "/dashboard/transactions/new", label: "Nueva Transacci\xF3n", icon: /* @__PURE__ */ jsxRuntime.jsx(IconPlus, {}) }
 ];
 function Sidebar() {
   const pathname = navigation.usePathname();
