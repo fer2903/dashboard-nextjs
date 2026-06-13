@@ -1,6 +1,6 @@
 {
   "name": "transactions-mfe",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Microfrontend de Transacciones — publicable como paquete npm y ejecutable como app Next.js standalone",
   "license": "MIT",
   "author": "",
