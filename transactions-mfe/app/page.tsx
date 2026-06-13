@@ -217,7 +217,7 @@ export default function TransactionsPage() {
 
         {/* Botón nueva transacción */}
         <Link
-          href="/new"
+          href="/dashboard/transactions/new"
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold text-white transition-all duration-200"
           style={{
             background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
@@ -295,7 +295,7 @@ export default function TransactionsPage() {
               {transactions.length === 0 ? "Sin transacciones" : "Sin resultados para los filtros aplicados"}
             </p>
             {transactions.length === 0 && (
-              <Link href="/new"
+              <Link href="/dashboard/transactions/new"
                 className="inline-block mt-4 px-4 py-2 rounded-lg text-sm font-semibold text-white"
                 style={{ background: "var(--primary)" }}>
                 Crear primera transacción
@@ -373,7 +373,7 @@ export default function TransactionsPage() {
                         <div className="flex items-center justify-center gap-1.5">
                           {/* Editar */}
                           <Link
-                            href={`/edit/${tx._id}`}
+                            href={`/dashboard/transactions/edit/${tx._id}`}
                             className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150"
                             style={{ color: "var(--text-secondary)", border: "1px solid var(--border)" }}
                             onMouseEnter={e => {

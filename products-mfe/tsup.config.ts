@@ -40,7 +40,7 @@ export default defineConfig({
     "swr",
   ],
 
-  esbuildOptions(options) {
+  esbuildOptions(options:any) {
     options.jsx = "automatic";
   },
 
