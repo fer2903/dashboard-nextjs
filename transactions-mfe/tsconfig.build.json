@@ -3,10 +3,22 @@
   "compilerOptions": {
     "noEmit": false,
     "declaration": true,
-    "declarationDir": "dist",
-    "outDir": "dist",
-    "rootDir": ".",
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "outDir": "dist/types",
+    "declarationDir": "dist/types",
+
+    // El tsconfig base hereda jsx del proyecto; lo fijamos en react-jsx
+    // para que tsc emita declaraciones correctamente desde .tsx.
+    "jsx": "react-jsx",
+
+    // Resuelve el path alias `@/*` si lo usás en algún archivo
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+
+    "skipLibCheck": true,
+    "incremental": false
   },
   "include": [
     "lib/**/*.ts",
@@ -17,6 +29,8 @@
   "exclude": [
     "node_modules",
     "dist",
-    ".next"
+    ".next",
+    ".next/types/**/*",
+    ".next/dev/types/**/*"
   ]
 }

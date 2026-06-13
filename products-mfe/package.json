@@ -1,6 +1,6 @@
 {
   "name": "products-mfe",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "Microfrontend de Productos — publicable como paquete npm y ejecutable como app Next.js standalone",
   "license": "MIT",
   "author": "",
