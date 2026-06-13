@@ -1,27 +1,53 @@
 {
   "name": "alerts-mfe",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "MFE de Alerts — npm + standalone",
+  "license": "MIT",
+  "type": "module",
+
+  "main":    "./dist/index.cjs",
+  "module":  "./dist/index.js",
+  "types":   "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types":   "./dist/index.d.ts",
+      "import":  "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+
+  "files": ["dist", "README.md", "LICENSE"],
+  "sideEffects": ["**/*.css"],
+  "publishConfig": { "access": "public" },
+
   "scripts": {
-    "dev": "next dev -p 3004",
-    "build": "next build",
-    "start": "next start -p 3004",
-    "lint": "next lint"
+    "dev":            "next dev -p 3004",
+    "build":          "next build",
+    "start":          "next start -p 3004",
+    "build:lib":      "tsup && npm run build:css",
+    "build:css":      "tailwindcss -i ./app/globals.css -o ./dist/styles.css --minify",
+    "prepublishOnly": "npm run build:lib",
+    "pack:dry":       "npm pack --dry-run"
   },
-  "dependencies": {
-    "next": "15.3.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "swr": "^2.3.3"
+
+  "peerDependencies": {
+    "next":      ">=15.0.0",
+    "react":     ">=19.0.0",
+    "react-dom": ">=19.0.0"
   },
+
   "devDependencies": {
+    "next": "^16.2.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "tsup": "^8.3.5",
+    "@tailwindcss/cli": "^4.0.0",
+    "@tailwindcss/postcss": "^4",
+    "tailwindcss": "^4",
+    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.2",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "@types/react-dom": "^19"
   }
 }

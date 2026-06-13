@@ -1,0 +1,22 @@
+# Código fuente
+app/
+lib/
+public/
+
+# Configs de Next y dev
+next.config.ts
+next-env.d.ts
+postcss.config.mjs
+tailwind.config.ts
+tsconfig.json
+tsconfig.build.json
+tsup.config.ts
+eslint.config.mjs
+
+# Artefactos
+.next/
+node_modules/
+.env*
+.git
+.DS_Store
+*.log
