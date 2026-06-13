@@ -92,7 +92,7 @@ export default function EditTransactionPage() {
         throw new Error(data.message ?? `Error ${res.status}`);
       }
       setSuccess(true);
-      setTimeout(() => router.push("/"), 1200);
+      setTimeout(() => router.push("/dashboard/transactions"), 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al actualizar");
     } finally {
@@ -123,7 +123,7 @@ export default function EditTransactionPage() {
     <div className="p-6">
       <div className="max-w-lg mx-auto">
 
-        <Link href="/" className="inline-flex items-center gap-2 text-sm mb-6 transition-colors"
+        <Link href="/dashboard/transactions" className="inline-flex items-center gap-2 text-sm mb-6 transition-colors"
           style={{ color: "var(--text-secondary)" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
@@ -216,7 +216,7 @@ export default function EditTransactionPage() {
               </div>
 
               <div className="flex gap-3 pt-1">
-                <Link href="/"
+                <Link href="/dashboard/transactions"
                   className="flex-1 py-3 rounded-lg text-sm font-bold text-center"
                   style={{ border: "1px solid var(--border)", color: "var(--text-secondary)", backgroundColor: "white" }}>
                   Cancelar

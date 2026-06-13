@@ -98,7 +98,7 @@ export default function NewTransactionPage() {
 
       setSuccess(true);
       // Redirigir a lista después de 1.2s
-      setTimeout(() => router.push("/"), 1200);
+      setTimeout(() => router.push("/dashboard/transactions"), 1200);
 
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al crear la transacción");
@@ -134,7 +134,7 @@ export default function NewTransactionPage() {
       <div className="max-w-lg mx-auto">
 
         {/* Volver */}
-        <Link href="/"
+        <Link href="/dashboard/transactions"
           className="inline-flex items-center gap-2 text-sm mb-6 transition-colors"
           style={{ color: "var(--text-secondary)" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -245,7 +245,7 @@ export default function NewTransactionPage() {
 
             {/* Botones */}
             <div className="flex gap-3 pt-1">
-              <Link href="/"
+              <Link href="/dashboard/transactions"
                 className="flex-1 py-3 rounded-lg text-sm font-bold text-center transition-all duration-150"
                 style={{ border: "1px solid var(--border)", color: "var(--text-secondary)", backgroundColor: "white" }}>
                 Cancelar

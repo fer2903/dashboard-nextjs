@@ -38,11 +38,11 @@ const IconLogo = () => (
 );
 
 // ── Nav items del MFE ───────────────────────────────────────────────
-// Con basePath='/dashboard/transactions', Link href="/" → /dashboard/transactions
-// y href="/new" → /dashboard/transactions/new
+// Rutas absolutas del host. El MFE ya no usa basePath porque se
+// consume como paquete npm dentro del host Next.js.
 const NAV_ITEMS = [
-  { href: "/",    label: "Lista de Transacciones", icon: <IconList /> },
-  { href: "/new", label: "Nueva Transacción",       icon: <IconPlus /> },
+  { href: "/dashboard/transactions",     label: "Lista de Transacciones", icon: <IconList /> },
+  { href: "/dashboard/transactions/new", label: "Nueva Transacción",       icon: <IconPlus /> },
 ];
 
 export default function Sidebar() {

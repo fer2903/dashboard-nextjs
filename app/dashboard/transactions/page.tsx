@@ -7,11 +7,14 @@ export default function Page() {
 /**
  * Página: /dashboard/transactions
  *
- * Renderiza el MFE de Transacciones dentro del layout del host
- * mediante un iframe. El MFE detecta que está embebido y oculta
- * su propio sidebar y topbar (ver EmbeddedShell.tsx en el MFE).
+ * Renderiza el MFE de Transacciones como componente React directamente
+ * dentro del host. Reemplaza al iframe anterior que apuntaba a :3001
+ * (causa del error "localhost rechazó la conexión" cuando el MFE no
+ * estaba corriendo en standalone).
  *
- * El host mantiene su Sidebar y TopBar visibles normalmente.
+ * El paquete `transactions-mfe` se instala vía npm y expone sus páginas
+ * como componentes React. El bundle publicado ya trae `"use client"`
+ * inyectado, así que esta página puede ser Server Component.
  *
  * Si el MFE no está corriendo en :3001, el iframe mostrará un error
  * de conexión del navegador.
