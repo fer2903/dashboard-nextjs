@@ -15,10 +15,10 @@
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/types/lib/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/types/lib/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
@@ -40,7 +40,8 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "next lint",
-    "build:lib": "tsup && npm run build:css",
+    "build:lib": "tsup && npm run build:types && npm run build:css",
+    "build:types": "tsc -p tsconfig.build.json",
     "build:css": "tailwindcss -i ./app/globals.css -o ./dist/styles.css --minify",
     "prepublishOnly": "npm run build:lib",
     "pack:dry": "npm pack --dry-run"
