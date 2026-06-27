@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "./app/src/lib/jwt";
+import { MODULES } from "./app/src/lib/modules";
 
 /**
  * Middleware de Next.js — Protección de Rutas con JWT
@@ -32,10 +33,32 @@ export async function middleware(req: NextRequest) {
 
   try {
     // Intentar verificar el token
-    // Si es válido, payload contiene { userId, email, role }
-    await verifyToken(token);
+    // Si es válido, payload contiene { userId, email, role, subscriptions }
+    const payload = await verifyToken(token);
 
-    // Token válido → dejar pasar la request
+    // ── Gateo por módulo (defensa en profundidad / corte temprano) ──────
+    // Si la ruta corresponde a un módulo que requiere suscripción, y los
+    // claims del token no la incluyen (y no es admin), cortar aquí antes de
+    // renderizar la página.
+    //
+    // NOTA: los claims del token son un snapshot; la verificación
+    // autoritativa y fresca vive en el guard de la página y en las APIs.
+    // El token se refresca en /api/auth/me, así que estos claims se
+    // mantienen al día durante la navegación normal.
+    const moduleForRoute = MODULES.find(
+      (m) => m.requiresSubscription && pathname.startsWith(m.route)
+    );
+
+    if (moduleForRoute && payload.role !== "admin") {
+      const subs = Array.isArray(payload.subscriptions) ? payload.subscriptions : [];
+      if (!subs.includes(moduleForRoute.key)) {
+        const url = new URL("/dashboard/no-access", req.url);
+        url.searchParams.set("module", moduleForRoute.key);
+        return NextResponse.redirect(url);
+      }
+    }
+
+    // Token válido (y con acceso al módulo, si aplica) → dejar pasar
     return NextResponse.next();
   } catch (error) {
     // Token inválido, expirado o modificado → redirigir al login

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/src/lib/mongodb";
 import { Transaction } from "@/app/src/models/Transaction";
+import { requireApiAccess } from "@/app/src/lib/entitlements";
 
 /**
  * Headers CORS — permiten que el MFE (localhost:3001) llame a esta API.
@@ -18,12 +19,18 @@ export async function OPTIONS() {
 }
 
 export async function GET() {
+  const denied = await requireApiAccess("transactions", CORS_HEADERS);
+  if (denied) return denied;
+
   await connectDB();
   const data = await Transaction.find().sort({ createdAt: -1 });
   return NextResponse.json(data, { headers: CORS_HEADERS });
 }
 
 export async function POST(requestBody: Request) {
+  const denied = await requireApiAccess("transactions", CORS_HEADERS);
+  if (denied) return denied;
+
   await connectDB();
   const body = await requestBody.json();
   const newTrx = await Transaction.create(body);

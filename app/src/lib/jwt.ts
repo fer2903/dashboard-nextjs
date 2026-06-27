@@ -28,6 +28,13 @@ export type JWTPayload = {
   userId: string;
   email: string;
   role: string;
+  /**
+   * Snapshot de los módulos suscritos en el momento de emitir el token.
+   * Lo usa el middleware (Edge) para un gateo temprano. NO es la fuente
+   * autoritativa: las páginas y APIs validan contra la DB fresca. El token
+   * se re-emite con datos frescos en /api/auth/me (self-healing).
+   */
+  subscriptions: string[];
 };
 
 /**

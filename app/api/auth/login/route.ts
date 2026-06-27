@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
+      subscriptions: Array.isArray(user.subscriptions) ? user.subscriptions : [],
     });
 
     // --- Construir respuesta ---

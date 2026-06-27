@@ -1,4 +1,5 @@
 import mongoose, { Schema, models } from "mongoose";
+import { MODULE_KEYS } from "@/app/src/lib/modules";
 
 /**
  * Modelo de Usuario en MongoDB
@@ -8,10 +9,13 @@ import mongoose, { Schema, models } from "mongoose";
  * agrega y actualiza en cada operación.
  *
  * Campos:
- *  - name     : Nombre completo del usuario
- *  - email    : Email único (se convierte a minúsculas automáticamente)
- *  - password : Contraseña hasheada con bcrypt (NUNCA se guarda en texto plano)
- *  - role     : Rol del usuario, útil para control de acceso ("admin" | "user")
+ *  - name          : Nombre completo del usuario
+ *  - email         : Email único (se convierte a minúsculas automáticamente)
+ *  - password      : Contraseña hasheada con bcrypt (NUNCA se guarda en texto plano)
+ *  - role          : Rol del usuario, útil para control de acceso ("admin" | "user")
+ *  - subscriptions : Módulos (MFE) a los que el usuario tiene acceso. Cada valor
+ *                    debe ser una key válida del registro de módulos (lib/modules.ts).
+ *                    Un admin ve todos los módulos sin importar este arreglo.
  */
 const UserSchema = new Schema(
   {
@@ -36,6 +40,12 @@ const UserSchema = new Schema(
       type: String,
       enum: ["admin", "user"], // solo estos valores son válidos
       default: "user",
+    },
+    subscriptions: {
+      type: [String],
+      // Cada elemento del arreglo debe ser una key de módulo conocida
+      enum: MODULE_KEYS,
+      default: [],
     },
   },
   {

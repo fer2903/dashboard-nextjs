@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/src/lib/mongodb";
 import { Transaction } from "@/app/src/models/Transaction";
+import { requireApiAccess } from "@/app/src/lib/entitlements";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  "http://localhost:3001",
@@ -13,6 +14,9 @@ export async function OPTIONS() {
 }
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireApiAccess("transactions", CORS_HEADERS);
+  if (denied) return denied;
+
   await connectDB();
   const { id } = await params;
   const body = await req.json();
@@ -24,6 +28,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireApiAccess("transactions", CORS_HEADERS);
+  if (denied) return denied;
+
   await connectDB();
   const { id } = await params;
   await Transaction.findByIdAndDelete(id);

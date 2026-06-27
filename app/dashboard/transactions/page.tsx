@@ -1,7 +1,9 @@
 import { TransactionsListPage } from "transactions-mfe";
 import "transactions-mfe/styles.css";
+import { requireModuleAccess } from "@/app/src/lib/entitlements";
 
-export default function Page() {
+export default async function Page() {
+  await requireModuleAccess("transactions");
   return <TransactionsListPage />;
 }
 /**

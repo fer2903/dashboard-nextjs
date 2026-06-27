@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/app/src/lib/mongodb";
 import { Product } from "@/app/src/models/Product";
+import { requireApiAccess } from "@/app/src/lib/entitlements";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": process.env.NEXT_PUBLIC_PRODUCTS_MFE_URL ?? "http://localhost:3003",
@@ -13,6 +14,9 @@ export async function OPTIONS() {
 }
 
 export async function GET() {
+  const denied = await requireApiAccess("products", CORS_HEADERS);
+  if (denied) return denied;
+
   try {
     await connectMongo();
     const products = await Product.find().sort({ createdAt: -1 }).lean();
@@ -27,6 +31,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireApiAccess("products", CORS_HEADERS);
+  if (denied) return denied;
+
   try {
     await connectMongo();
     const body = await req.json();

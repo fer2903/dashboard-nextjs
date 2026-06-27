@@ -1,15 +1,16 @@
 import { AlertsListPage } from "alerts-mfe";
 import "alerts-mfe/styles.css";
+import { requireModuleAccess } from "@/app/src/lib/entitlements";
 /**
  * Página: /dashboard/alerts
  *
- * Renderiza el MFE de Alertas dentro del layout del host
- * mediante un iframe. El MFE detecta que está embebido y oculta
- * su propio sidebar y topbar (ver EmbeddedShell.tsx en el MFE).
+ * Renderiza el MFE de Alertas dentro del layout del host.
  *
- * Si el MFE no está corriendo en :3004, el iframe mostrará un error
- * de conexión del navegador.
+ * Control de acceso: solo los usuarios suscritos al módulo "alerts"
+ * (o un admin) pueden ver esta página. `requireModuleAccess` redirige
+ * antes de renderizar si el usuario no tiene acceso.
  */
-export default function Page() {
+export default async function Page() {
+  await requireModuleAccess("alerts");
   return <AlertsListPage />;
 }

@@ -20,6 +20,7 @@
 //params.slug = ["client", "bimbo", "coin", "btc"]
 
 import { NextResponse } from "next/server";
+import { requireApiAccess } from "@/app/src/lib/entitlements";
 
 
 type TransactionResponse = {
@@ -59,7 +60,10 @@ export async function GET(
   req: Request,
   context: { params: Promise<{ slug?: string[] }> }
 ) {
-  const { slug = [] } = await context.params // revisar documentacion especifica 
+  const denied = await requireApiAccess("transactions")
+  if (denied) return denied
+
+  const { slug = [] } = await context.params // revisar documentacion especifica
 
   let result = [...transactions]
 

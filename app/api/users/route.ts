@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/src/lib/mongodb";
 import { User } from "@/app/src/models/User";
+import { getCurrentUser } from "@/app/src/lib/auth";
 
 /**
  * GET /api/users
@@ -17,6 +18,12 @@ import { User } from "@/app/src/models/User";
  * El método .sort({ createdAt: -1 }) ordena del más reciente al más antiguo.
  */
 export async function GET() {
+  // Cerrar el endpoint: requiere sesión válida (antes era público).
+  const session = await getCurrentUser();
+  if (!session) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
+
   try {
     await connectDB();
 

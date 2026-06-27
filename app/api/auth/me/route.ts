@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/app/src/lib/jwt";
+import { verifyToken, signToken } from "@/app/src/lib/jwt";
 import { connectDB } from "@/app/src/lib/mongodb";
 import { User } from "@/app/src/models/User";
 
@@ -43,7 +43,31 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ user });
+    // Re-emitir el token con los datos frescos (rol + suscripciones) para que
+    // el gateo del middleware (que lee los claims del JWT) quede al día sin
+    // necesidad de que el usuario vuelva a iniciar sesión (self-healing).
+    const subscriptions = Array.isArray(user.subscriptions) ? user.subscriptions : [];
+    const response = NextResponse.json({ user });
+
+    try {
+      const freshToken = await signToken({
+        userId: user._id.toString(),
+        email: user.email,
+        role: user.role,
+        subscriptions,
+      });
+      response.cookies.set("token", freshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7, // 7 días
+        path: "/",
+      });
+    } catch {
+      // Si el refresco falla, devolvemos igual los datos del usuario.
+    }
+
+    return response;
   } catch {
     // El token era inválido o expirado
     return NextResponse.json(

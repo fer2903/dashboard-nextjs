@@ -1,23 +1,18 @@
-"use client";
-
 /**
  * Página: /dashboard/products
  *
- * Renderiza el MFE de Productos como componente React dentro del host.
+ * Server Component que aplica el control de acceso por suscripción antes de
+ * renderizar el MFE de Productos. Solo los usuarios suscritos al módulo
+ * "products" (o un admin) pueden verlo; en caso contrario `requireModuleAccess`
+ * redirige antes de renderizar.
  *
- * IMPORTANTE — directiva "use client":
- *   El bundle publicado de `products-mfe` no incluyó la directiva
- *   "use client" al inicio del archivo. Sin esa marca, Next.js lo
- *   compila en contexto RSC y resuelve `swr` contra su entry point
- *   `react-server.mjs`, que no expone el default export de useSWR
- *   (error: "Export default doesn't exist in target module").
- *
- *   Mientras no se republique el paquete con la directiva incluida,
- *   forzamos contexto cliente aquí.
+ * El MFE en sí se monta dentro de ProductsClient ("use client"), porque su
+ * bundle requiere contexto cliente (ver ProductsClient.tsx).
  */
-import { ProductsListPage } from "products-mfe";
-import "products-mfe/styles.css";
+import { requireModuleAccess } from "@/app/src/lib/entitlements";
+import ProductsClient from "./ProductsClient";
 
-export default function ProductsPage() {
-  return <ProductsListPage />;
+export default async function ProductsPage() {
+  await requireModuleAccess("products");
+  return <ProductsClient />;
 }

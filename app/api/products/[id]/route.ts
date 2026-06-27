@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/app/src/lib/mongodb";
 import { Product } from "@/app/src/models/Product";
+import { requireApiAccess } from "@/app/src/lib/entitlements";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": process.env.NEXT_PUBLIC_PRODUCTS_MFE_URL ?? "http://localhost:3003",
@@ -16,6 +17,9 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = await requireApiAccess("products", CORS_HEADERS);
+  if (denied) return denied;
+
   try {
     await connectMongo();
     const { id } = await params;
@@ -34,6 +38,9 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = await requireApiAccess("products", CORS_HEADERS);
+  if (denied) return denied;
+
   try {
     await connectMongo();
     const { id } = await params;
@@ -57,6 +64,9 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = await requireApiAccess("products", CORS_HEADERS);
+  if (denied) return denied;
+
   try {
     await connectMongo();
     const { id } = await params;

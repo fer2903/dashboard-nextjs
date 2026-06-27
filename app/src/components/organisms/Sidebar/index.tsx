@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "@/app/src/hooks/useSession";
+import type { ModuleKey } from "@/app/src/lib/modules";
 
 // ── Iconos SVG inline ───────────────────────────────────────────────
 
@@ -52,6 +54,13 @@ const IconAlerts = () => (
   </svg>
 );
 
+const IconAdmin = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="M9 12l2 2 4-4" />
+  </svg>
+);
+
 const IconLogout = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -71,7 +80,15 @@ const IconLogo = () => (
 // mfe: true → usa <a> nativo para forzar navegación HTTP completa
 // y que el rewrite de next.config.ts se active correctamente.
 // Con <Link> (client-side) los rewrites se saltan.
-type NavItem = { href: string; label: string; icon: React.ReactNode; mfe?: boolean };
+// moduleKey → si está presente, el item solo se muestra cuando el usuario
+// tiene acceso al módulo (suscrito o admin).
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  mfe?: boolean;
+  moduleKey?: ModuleKey;
+};
 
 const NAV_GENERAL: NavItem[] = [
   { href: "/dashboard",       label: "Dashboard",      icon: <IconDashboard /> },
@@ -79,10 +96,14 @@ const NAV_GENERAL: NavItem[] = [
 
 const NAV_MANAGEMENT: NavItem[] = [
   { href: "/dashboard/users",        label: "Usuarios",       icon: <IconUsers /> },
-  { href: "/dashboard/transactions", label: "Transacciones",  icon: <IconTransactions />, mfe: true },
+  { href: "/dashboard/transactions", label: "Transacciones",  icon: <IconTransactions />, mfe: true, moduleKey: "transactions" },
   { href: "/dashboard/payments",     label: "Pagos",          icon: <IconPayments /> },
-  { href: "/dashboard/products",     label: "Productos",      icon: <IconProducts />,     mfe: true },
-  { href: "/dashboard/alerts",       label: "Alertas",        icon: <IconAlerts />,        mfe: true },
+  { href: "/dashboard/products",     label: "Productos",      icon: <IconProducts />,     mfe: true, moduleKey: "products" },
+  { href: "/dashboard/alerts",       label: "Alertas",        icon: <IconAlerts />,        mfe: true, moduleKey: "alerts" },
+];
+
+const NAV_ADMIN: NavItem[] = [
+  { href: "/dashboard/admin", label: "Suscripciones", icon: <IconAdmin /> },
 ];
 
 // ── NavGroup ────────────────────────────────────────────────────────
@@ -178,6 +199,15 @@ const NavGroup = ({
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { canAccessModule, isAdmin, loading } = useSession();
+
+  // Mostrar un item de módulo solo si el usuario tiene acceso. Mientras carga
+  // la sesión, ocultamos los módulos para no exponer enlaces no permitidos.
+  const managementItems = NAV_MANAGEMENT.filter((item) => {
+    if (!item.moduleKey) return true;
+    if (loading) return false;
+    return canAccessModule(item.moduleKey);
+  });
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -224,7 +254,10 @@ export default function Sidebar() {
       {/* ── Navegación ─────────────────────────────────────────── */}
       <nav className="flex-1 px-3 py-5 space-y-4 overflow-y-auto">
         <NavGroup label="General" items={NAV_GENERAL} pathname={pathname} />
-        <NavGroup label="Gestión" items={NAV_MANAGEMENT} pathname={pathname} />
+        <NavGroup label="Gestión" items={managementItems} pathname={pathname} />
+        {isAdmin && (
+          <NavGroup label="Administración" items={NAV_ADMIN} pathname={pathname} />
+        )}
       </nav>
 
       {/* ── Divider ────────────────────────────────────────────── */}
